@@ -1,4 +1,5 @@
 #include <SPI.h>
+#include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
 
@@ -8,6 +9,9 @@
 #define TFT_RST  4
 #define TFT_SCLK 18  // SCK (VSPI)
 #define TFT_MOSI 23  // MOSI (VSPI)
+
+//intergation des recepteurs
+const int pinA0 = A0
 
 // Instance de l'écran (SPI matériel)
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
@@ -24,10 +28,12 @@ void setup() {
   tft.print("LAMBDA");
 
   tft.setCursor(5, 30);
-  tft.print("14.7");
+  tft.print(lambda,2); // lambda variable
 
 }
 
 void loop() {
-  // vide → rien ne change, affichage figé
+    int widebandreading = analogRead(pinA0); // lecture du signal du capteur large bande
+    float widebandvoltage = widebandreading * (5.0 / 1023.0); // conversion en tension
+    float lambda = 10 + (widebandvoltage * 2);
 }
