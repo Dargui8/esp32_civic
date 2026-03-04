@@ -18,6 +18,14 @@ const int pinA1 = 33; // température
 float lambdaValue = 0.0;
 float tempValue = 0.0;
 
+// Calibration de la sonde de température
+// À adapter en fonction de votre sonde !
+// Exemple pour LM35: V0=0.5V@0°C, V100=1.5V@100°C
+float calibVoltage_Low = 0.50;   // Tension lue à 0°C (ou temp connue)
+float calibTemp_Low = 0.0;       // Température réelle à ce voltage
+float calibVoltage_High = 1.50;  // Tension lue à 100°C (ou temp connue)
+float calibTemp_High = 100.0;    // Température réelle à ce voltage
+
 // Instance de l'écran (SPI matériel)
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -51,13 +59,11 @@ void loop() {
     float tempvoltage = tempreading * (3.3 / 4095.0); // conversion en tension
 
     lambdaValue = 10 + (widebandvoltage * 2);
-    tempValue = (tempvoltage - 0.5) * 100; // conversion en degrés Celsius (exemple)
-
-    // Log pour debug
-    Serial.print("A0="); Serial.print(widebandreading);
-    Serial.print(" v="); Serial.print(widebandvoltage,3);
-    Serial.print("  |  A1="); Serial.print(tempreading);
-    Serial.print(" v="); Serial.println(tempvoltage,3);
+    
+    // Calibration linéaire de la température
+    float tempRange = calibTemp_High - calibTemp_Low;
+    float voltageRange = calibVoltage_High - calibVoltage_Low;
+    tempValue = calibTemp_Low + ((tempvoltage - calibVoltage_Low) * (tempRange / voltageRange));
 
     // Mettre à jour l'affichage: effacer ancienne zone puis réécrire
     tft.setTextSize(2);
@@ -69,6 +75,7 @@ void loop() {
     tft.fillRect(5, 70, 120, 20, ST77XX_BLACK); // efface l'ancienne temp
     tft.setCursor(5, 70);
     tft.print(tempValue,2);
+    tft.print(" °C");  // Ajout du °C
 
     delay(200);
 }
