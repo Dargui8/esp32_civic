@@ -15,6 +15,7 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Allumage | Kit Honed Developments D & B Series (HDP40), capteurs Hall de came Honda série K |
 | Bobines | NGK U5014, marquage `105N R06 02 S 003 00 0025354724`, étincelle unique |
 | Injecteurs | Honda d'origine, 240 cc/min |
+| Régulateur de pression d'essence | AEM 25-304BK, réglable (pression réglée : à ajouter, mesurée au manomètre) |
 | Capteur MAP | Denso 079800-3000, 5 V, marquage PS-30 (celui de la voiture, relié à l'admission) |
 | Sonde lambda | Sonde étroite (référence à ajouter) |
 | Ralenti | Pas de vanne de ralenti pilotée par la carte |
@@ -33,7 +34,9 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Capteur MAP Denso 079800 | [Fil de forum cité par speeduino.ini](http://speeduino.com/forum/viewtopic.php?f=18&t=510&p=7023#p7021) | forum Speeduino | non officiel | Parle du 079800-**1771**, pas du -3000 |
 | Bobines NGK U5014 | Pas de fiche trouvée | — | — | **À ajouter** : brochage et durée de charge (dwell) |
 | Bobines (voisine U5015) | [HP Academy, Audi R8 ignition coil dwell](https://www.hpacademy.com/forum/general-tuning-discussion/show/audi-r8-ignition-coil-dwell-settings) | forum | non officiel | 1,7 ms pour la U5015, chiffre attribué à NGK ; autre référence que la U5014 |
-| Injecteurs 240 cc/min | Pas de fiche trouvée | — | — | **À ajouter** : référence, impédance, temps d'ouverture |
+| Injecteurs 240 cc/min | Pas de fiche trouvée | — | — | **À ajouter** : référence, impédance, temps d'ouverture, pression à laquelle le débit de 240 cc/min est donné |
+| Régulateur AEM 25-304BK | [carburant/aem-25-304bk-regulateur-pression-instructions.pdf](carburant/aem-25-304bk-regulateur-pression-instructions.pdf) | [AEM, notice officielle](https://documents.aemelectronics.com/609dbef758b9e71e573f8a5a11771ed139bfd92a.pdf) | officiel | Réglable de 20 psi au maximum de la pompe ; prise de dépression 1:1 ; réglé à 40 psi en usine (p. 4) ; pression mesurée **au ralenti, durite de dépression débranchée et pincée** (p. 4) ; Civic 96-00 EX : 40-47 psi (tableau p. 6, le D16Y3 n'y figure pas) |
+| Régulateur AEM 25-304BK | [Page produit](https://www.aemelectronics.com/products/fuel_delivery/adjustable_fuel_pressure_regulators/parts/25-304BK) | AEM | officiel | Donné pour B20B4, D16Y8, F22B1/B2 |
 | Sondes d'eau et d'air Honda | Pas de table trouvée | — | — | **À ajouter** : table résistance / température |
 | Capteur de papillon Honda | Pas de fiche trouvée | — | — | **À ajouter** : plage de tension |
 | Sonde lambda étroite | Pas de fiche | — | — | **À ajouter** : référence |
@@ -62,6 +65,7 @@ Le dépôt `noisymime/speeduino` redirige maintenant vers `speeduino/speeduino`.
 - [ ] Manuel Honed HDP40 (dans `honed/`)
 - [ ] Fiche NGK U5014
 - [ ] Fiche des injecteurs d'origine
+- [ ] Pression d'essence réglée sur le régulateur AEM (mesurée selon la notice, p. 4)
 - [ ] Tables des sondes d'eau et d'air Honda
 - [ ] Plage de tension du capteur de papillon
 - [ ] Référence de la sonde lambda étroite
