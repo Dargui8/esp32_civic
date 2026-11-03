@@ -14,10 +14,13 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Logiciel | TunerStudio MS Lite 3.2.03 |
 | Allumage | Kit Honed Developments D & B Series (HDP40), capteurs Hall de came Honda série K |
 | Bobines | NGK U5014, marquage `105N R06 02 S 003 00 0025354724`, étincelle unique |
-| Injecteurs | Honda d'origine, 240 cc/min |
+| Injecteurs | Honda d’origine D16Y3 : ensemble **06164-P06-A02** (identification catalogue). 240 cc/min : donnée du projet, pression de référence non documentée |
 | Régulateur de pression d'essence | AEM 25-304BK, réglable (pression réglée : à ajouter, mesurée au manomètre) |
 | Capteur MAP | Denso 079800-3000, 5 V, marquage PS-30 (celui de la voiture, relié à l'admission) |
-| Sonde lambda | Sonde étroite (référence à ajouter) |
+| Sonde d’eau ECU | **37870-PJ7-003**, TW5 Matsushita — référence du montage d’origine D16Y3 |
+| Sonde de température d’air | **37880-P05-A00** — référence du montage d’origine D16Y3 |
+| Corps de papillon / TPS | **16400-P1G-E01** (GRS3A), retenu sur correspondance visuelle signalée par le propriétaire le 3 novembre 2026 ; TPS non référencé séparément |
+| Sonde lambda | Sonde étroite actuellement indiquée ; remplacement futur traité à part dans la section « Lambda — évolution ultérieure » |
 | Ralenti | Pas de vanne de ralenti pilotée par la carte |
 
 ## Documents
@@ -39,8 +42,6 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Régulateur AEM 25-304BK | [Page produit](https://www.aemelectronics.com/products/fuel_delivery/adjustable_fuel_pressure_regulators/parts/25-304BK) | AEM | officiel | Donné pour B20B4, D16Y8, F22B1/B2 |
 | Sondes d’eau et d’air Honda | Voir les références d’origine ci-dessous | Catalogue Honda 17ST301 | constructeur reproduit | Eau 37870-PJ7-003 ; air 37880-P05-A00 ; **à ajouter** : tables résistance/température |
 | Capteur de papillon Honda | [Manuel Honda Civic 1999, connecteur ECM/PCM C, borne 27](https://content.instructables.com/FYT/UKSB/IKOAR3S2/FYTUKSBIKOAR3S2.pdf) | Manuel constructeur, copie hébergée par un tiers | référence comparative, D16Y7 | Environ 0,5 V fermé et 4,8 V ouvert ; **à confirmer sur le capteur du montage D16Y3**, pas une validation de son brochage |
-| Sonde lambda étroite | Voir les variantes ci-dessous | Catalogues Honda et Denso | constructeur | Plusieurs références selon montage ; variante du donneur à préciser |
-| Sonde large bande Bosch LSU ADV / ADV pre Turbo | [Fiche PDF fournie](lambda/adv_pre_turbo.pdf) | Bosch Motorsport | document constructeur fourni | Sonde large bande nécessitant un contrôleur compatible LSU ADV ; présence sur la voiture non confirmée, ne remplace pas la référence de la sonde étroite |
 | TunerStudio | [Aide en ligne](https://www.tunerstudio.com/index.php/support/manuals) | EFI Analytics | officiel | Pas de manuel utilisateur complet en PDF |
 
 ## Wiki Speeduino (officiel)
@@ -70,9 +71,9 @@ Le dépôt `noisymime/speeduino` redirige maintenant vers `speeduino/speeduino`.
 - [ ] Caractéristiques électriques et hydrauliques des injecteurs d’origine
 - [ ] Pression d'essence réglée sur le régulateur AEM (mesurée selon la notice, p. 4)
 - [ ] Tables des sondes d'eau et d'air Honda
-- [ ] Plage de tension du capteur de papillon du montage : comparaison Honda trouvée, mesure et référence à confirmer
-- [x] Références possibles de la lambda d’origine et variantes Denso
-- [ ] Déterminer la variante lambda correspondant au véhicule donneur
+- [x] Références d’origine des sondes eau/air intégrées au matériel du projet
+- [x] Papillon 16400-P1G-E01 retenu sur correspondance visuelle du propriétaire
+- [ ] Plage de tension et calibration TPS du papillon retenu : valeurs comparatives disponibles, mesures à confirmer
 - [ ] Schéma de câblage de la voiture
 
 ## Résultat des recherches du 3 novembre 2026
@@ -86,13 +87,11 @@ Les documents sont distingués des valeurs réellement relevées sur la voiture.
 | Pression AEM | La notice est déjà présente. La pression effectivement réglée doit être mesurée sur la voiture selon la p. 4 ; la valeur d’usine ne prouve pas le réglage actuel. |
 | Sondes eau/air | Références d’origine identifiées : TW5 37870-PJ7-003 et IAT 37880-P05-A00 ; tables résistance/température encore à documenter. |
 | TPS | Repères 0,5 V fermé / 4,8 V ouvert trouvés dans le manuel Honda cité ci-dessus, pour une autre variante. Relever les valeurs du montage et calibrer ses butées dans TunerStudio. |
-| Lambda étroite | Plusieurs références d’origine et variantes Denso trouvées : voir la comparaison ci-dessous. Le PDF LSU ADV concerne une autre technologie. |
 | Câblage voiture | Un schéma d’origine ne documente pas les modifications EJ9 / D16Y3 / Speeduino / Honed / bobines. Il faut relever les connecteurs, broches, masses, alimentations et protections du faisceau réel. |
 
-### Précisions sur les deux PDF fournis
+### Précisions sur le manuel Honed
 
 - **Honed** : p. 6, 8 dents Trigger + 1 Home par tour d’arbre à cames, capteurs Hall, front descendant et pull-up. Les angles suggérés aux pages Haltech et Link sont propres à ces configurations : ils ne constituent pas un angle Speeduino validé. Calage à contrôler à la lampe stroboscopique. Le nom du fichier indique 10APR26, mais la page de garde porte 23DEC25, révision 03.
-- **Bosch LSU ADV** : la fiche fournie indique un fonctionnement avec une unité d’évaluation adaptée (LT4 ADV citée). La sonde seule ne fournit pas directement un signal large bande 0–5 V exploitable par Speeduino. [Fiche actuellement publiée par Bosch](https://www.bosch-motorsport.com/content/downloads/Raceparts/Resources/pdf/Data%20Sheet_69086859_Lambda_Sensor_LSU_ADV/ADV_pre_Turbo.pdf) : lien de provenance complémentaire, sans affirmer que cette édition est identique au fichier fourni.
 
 ## Références d’origine D16Y3 et variantes de catalogue
 
@@ -103,9 +102,7 @@ Recherche approfondie du 3 novembre 2026, sur la base du matériel d’origine D
 | Sonde d’eau ECU, TW5 Matsushita | **37870-PJ7-003** | Identique dans les deux fiches, repère 13 du groupe pompe à eau. |
 | Sonde de température d’air | **37880-P05-A00** | Identique dans les deux fiches, repère 11 du collecteur d’admission. |
 | Ensemble injecteur, repère 1 | **06164-P06-A02** | Identique dans les deux fiches. Le catalogue européen le nomme « PACKING SET, INJECTOR » ; le catalogue Honda US le nomme « Fuel Injector Set ». Ne pas le confondre avec les joints séparés 16472-PD6-000 et 16473-PD6-000. |
-| Lambda | **36531-P1K-E01** | Fiche 1995 automatique consultée. |
-| Lambda avant | **36531-P1K-E11**, remplacement affiché **36531-P2R-A01** | Fiche 1996 manuelle consultée. Il existe donc plusieurs références de catalogue ; ne pas présenter une seule comme universelle au D16Y3. |
-| Corps de papillon complet | **16400-P1K-E51** (GR52A) / **16400-P1G-E01** (GRS3A) | Respectivement fiches 1995 automatique / 1996 manuelle. Le TPS n’est pas détaillé séparément dans ces listes. |
+| Corps de papillon complet | **16400-P1G-E01** (GRS3A), retenu pour le projet | Correspondance visuelle signalée par le propriétaire le 3 novembre 2026. Variante de catalogue : 16400-P1K-E51 (GR52A). Le TPS n’est pas détaillé séparément ; la ressemblance ne valide pas les caractéristiques électriques. |
 | MAP d’origine | **37830-P0G-S00**, remplacement affiché **37830-PAA-S00** | Identique dans les deux listes de papillon ; cela ne démontre pas une équivalence avec le Denso -3000 conservé sur le projet. |
 
 Les références **37750-PH2-014** (« Thermo unit », jauge) et **37760-P00-003** (« Thermo switch A-93 », thermocontact) figurent à côté de la TW5 : ce sont des composants distincts, pas deux autres calibrations de sonde ECU.
@@ -116,9 +113,40 @@ Catalogues constructeur reproduits par le réseau de vente de pièces Honda :
 
 - [Admission 1995 automatique](https://www.parts-honda.uk/honda-cars/CIVIC/1995/16ILS/ENGINE/INTAKE-MANIFOLD-SOHC-16L-VTEC-95-96-/17ST301/E__0301/1/18196) ; [admission 1996 manuelle](https://www.honda-car-parts.com/honda-cars/CIVIC/1996/16ILS/ENGINE/INTAKE-MANIFOLD-SOHC-16L-VTEC-95-96-/17ST301/E__0301/1/18290).
 - [Pompe à eau et sondes 1995 automatique](https://www.parts-honda.uk/honda-cars/CIVIC/1995/16ILS/ENGINE/WATER-PUMP-SOHC-/17ST301/E__1500/1/18196) ; [1996 manuelle](https://www.honda-car-parts.com/honda-cars/CIVIC/1996/16ILS/ENGINE/WATER-PUMP-SOHC-/17ST301/E__1500/1/18290).
-- [Lambda 1995 automatique](https://www.parts-honda.uk/honda-cars/CIVIC/1995/16ILS/ENGINE/EXHAUST-MANIFOLD-SOHC-/17ST301/E__0400/1/18196) ; [lambda 1996 manuelle](https://www.honda-car-parts.com/honda-cars/CIVIC/1996/16ILS/ENGINE/EXHAUST-MANIFOLD-SOHC-/17ST301/E__0400/1/18290).
 - [Papillon 1995 automatique](https://www.parts-honda.uk/honda-cars/CIVIC/1995/16ILS/ENGINE/THROTTLE-BODY-SOHC-16L-VTEC-95-96-/17ST301/E__0101/1/18196) ; [papillon 1996 manuelle](https://www.honda-car-parts.com/honda-cars/CIVIC/1996/16ILS/ENGINE/THROTTLE-BODY-SOHC-16L-VTEC-95-96-/17ST301/E__0101/1/18290).
 - [Dénomination Honda US de 06164-P06-A02](https://www.hondapartsnow.com/genuine/honda~injector~set~fuel~06164-p06-a02.html).
+
+### Ce que l’identification résout et ce qui reste à documenter
+
+- Les références des sondes eau/air et de l’ensemble injecteur sont désormais identifiées par catalogue ; leur recherche ne dépend plus de marquages sur les pièces.
+- Les courbes résistance/température des sondes, l’impédance documentée et le temps mort des injecteurs restent à trouver dans une source technique applicable. La référence commerciale seule ne fournit pas ces paramètres.
+- Le débit **240 cc/min** reste une donnée du projet, non confirmé par les catalogues consultés avec sa pression différentielle de référence.
+- Le papillon 16400-P1G-E01 est retenu sur correspondance visuelle du propriétaire. La recherche d’identification de l’ancienne lambda est mise de côté, son remplacement étant prévu.
+
+
+## Lambda — évolution ultérieure
+
+Le propriétaire prévoit d’installer plus tard une sonde plus récente. La lambda est traitée séparément du matériel d’origine retenu pour le projet ; aucune référence de remplacement n’est choisie à ce stade. Les recherches sur l’ancienne sonde sont conservées ci-dessous à titre documentaire, sans tâche active pour identifier sa variante.
+
+- [ ] Choisir ultérieurement la sonde et, si nécessaire, son contrôleur compatible.
+- [ ] Documenter alors le câblage et la calibration correspondants dans Speeduino.
+
+### Documentation disponible
+
+| Pièce | Document | Source | Statut | Ce qu’on y trouve |
+|---|---|---|---|---|
+| Sonde large bande Bosch LSU ADV / ADV pre Turbo | [Fiche PDF fournie](lambda/adv_pre_turbo.pdf) | Bosch Motorsport | document constructeur fourni | Sonde large bande nécessitant un contrôleur compatible LSU ADV ; document conservé pour étude, ne constitue pas le choix de la future sonde |
+
+- **Bosch LSU ADV** : la fiche fournie indique un fonctionnement avec une unité d’évaluation adaptée (LT4 ADV citée). La sonde seule ne fournit pas directement un signal large bande 0–5 V exploitable par Speeduino. [Fiche actuellement publiée par Bosch](https://www.bosch-motorsport.com/content/downloads/Raceparts/Resources/pdf/Data%20Sheet_69086859_Lambda_Sensor_LSU_ADV/ADV_pre_Turbo.pdf) : lien de provenance complémentaire, sans affirmer que cette édition est identique au fichier fourni.
+
+### Anciennes références d’origine — pour mémoire
+
+| Pièce | Référence relevée | Portée |
+|---|---|---|
+| Lambda | **36531-P1K-E01** | Fiche 1995 automatique consultée. |
+| Lambda avant | **36531-P1K-E11**, remplacement affiché **36531-P2R-A01** | Fiche 1996 manuelle consultée. Il existe donc plusieurs références de catalogue ; ne pas présenter une seule comme universelle au D16Y3. |
+
+- [Lambda 1995 automatique](https://www.parts-honda.uk/honda-cars/CIVIC/1995/16ILS/ENGINE/EXHAUST-MANIFOLD-SOHC-/17ST301/E__0400/1/18196) ; [lambda 1996 manuelle](https://www.honda-car-parts.com/honda-cars/CIVIC/1996/16ILS/ENGINE/EXHAUST-MANIFOLD-SOHC-/17ST301/E__0400/1/18290).
 
 ### Variantes lambda explicitement listées par Denso
 
@@ -131,10 +159,3 @@ Le [catalogue officiel Denso 2024, page imprimée 66](https://assets.denso-am.eu
 | 07/1995–06/1996, M (manuelle) | DOX-1409 | DOX-0109 |
 
 Les périodes se chevauchent : conserver les conditions de boîte et vérifier le connecteur/nombre de fils pour choisir la variante. Ce tableau prouve plusieurs possibilités et ne constitue pas une correspondance univoque de chaque numéro Honda ci-dessus.
-
-### Ce que l’identification résout et ce qui reste à documenter
-
-- Les références des sondes eau/air et de l’ensemble injecteur sont désormais identifiées par catalogue ; leur recherche ne dépend plus de marquages sur les pièces.
-- Les courbes résistance/température des sondes, l’impédance documentée et le temps mort des injecteurs restent à trouver dans une source technique applicable. La référence commerciale seule ne fournit pas ces paramètres.
-- Le débit **240 cc/min** reste une donnée du projet, non confirmé par les catalogues consultés avec sa pression différentielle de référence.
-- Les variantes lambda et papillon sont établies. L’année et la boîte du véhicule donneur, si connues, permettraient de resserrer le choix sans lire de référence sur les pièces.
