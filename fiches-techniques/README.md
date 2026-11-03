@@ -15,7 +15,7 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Allumage | Kit Honed Developments D & B Series (HDP40), capteurs Hall de came Honda série K |
 | Bobines | NGK U5014, marquage `105N R06 02 S 003 00 0025354724`, étincelle unique |
 | Injecteurs | Honda d’origine D16Y3 : ensemble **06164-P06-A02** (identification catalogue). 240 cc/min : donnée du projet, pression de référence non documentée |
-| Régulateur de pression d'essence | AEM 25-304BK, réglable (pression réglée : à ajouter, mesurée au manomètre) |
+| Régulateur de pression d'essence | AEM 25-304BK, réglable. Vis de réglage non touchée depuis la réception (indiqué par le propriétaire le 3 novembre 2026) : réglage d'usine 40 psi (notice p. 4), **pas encore mesuré** sur la voiture |
 | Capteur MAP | Denso 079800-3000, 5 V, marquage PS-30 (celui de la voiture, relié à l'admission) |
 | Sonde d’eau ECU | **37870-PJ7-003**, TW5 Matsushita — référence du montage d’origine D16Y3 |
 | Sonde de température d’air | **37880-P05-A00** — référence du montage d’origine D16Y3 |
@@ -91,7 +91,15 @@ Les documents sont distingués des valeurs réellement relevées sur la voiture.
 
 ### Précisions sur le manuel Honed
 
-- **Honed** : p. 6, 8 dents Trigger + 1 Home par tour d’arbre à cames, capteurs Hall, front descendant et pull-up. Les angles suggérés aux pages Haltech et Link sont propres à ces configurations : ils ne constituent pas un angle Speeduino validé. Calage à contrôler à la lampe stroboscopique. Le nom du fichier indique 10APR26, mais la page de garde porte 23DEC25, révision 03.
+- **Honed** : p. 6, 8 dents Trigger + 1 Home par tour d’arbre à cames, capteurs Hall, front descendant et pull-up. Tune actuel (`CurrentTune.msq`) : `TrigEdge` et `TrigEdgeSec` = FALLING, conforme à la p. 6. Les angles suggérés aux pages Haltech et Link sont propres à ces configurations : ils ne constituent pas un angle Speeduino validé. Calage à contrôler à la lampe stroboscopique. Le nom du fichier indique 10APR26, mais la page de garde porte 23DEC25, révision 03.
+
+### Mesure de la pression d'essence
+
+- **Outil** : un manomètre d'essence gradué jusqu'à environ 100 psi (7 bar), avec un raccord Honda. Exemple de kit vendu pour les Civic 1988-2000 : [B&M 46054](https://888murrays.com/b-m-46054-fuel-pressure-gauge) (source revendeur, non officielle).
+- **Où le brancher** : à la place de la vis de service de 6 mm, sur le banjo du filtre à essence ([manuel d'atelier Civic 1995, 1.5 L](https://workshop-manuals.com/honda/civic_sedan/l4-1.5l_sohc_(16_valve)/powertrain_management/fuel_delivery_and_air_induction/fuel_pressure_release/system_information/service_and_repair/), autre moteur que le D16Y3). Sans vis de 6 mm : raccord à la place du banjo de 12 mm, M12 x 1,25 vers 1/8 NPT ([exemple d'adaptateur](https://www.vmsracing.com/products/honda-acura-fuel-pressure-gauge-adapter-banjo-bolt-fitting-12mm-bolt-kit-1-8-npt-filter), revendeur). **À vérifier sur la voiture** avant d'acheter.
+- **Conditions** (notice AEM) : moteur au ralenti, durite de dépression du régulateur débranchée et pincée (p. 4) ; moteur refroidi s'il a tourné dans les deux heures, rondelle de la vis de service remplacée à chaque desserrage (p. 3).
+- **Cible** : 40-47 psi pour toutes les Civic 96-00 du tableau AEM (p. 6) ; le D16Y3 n'y figure pas.
+- **Plus tard, en option** : le firmware a une entrée pour un capteur de pression d'essence (`fuelPressureEnable`, désactivée dans le tune actuel, broche par défaut A14). Broche libre sur la carte v0.4 : non vérifiée.
 
 ## Références d’origine D16Y3 et variantes de catalogue
 
