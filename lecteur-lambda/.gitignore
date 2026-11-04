@@ -1,0 +1,3 @@
+.pio/
+tests/test_core
+tests/trace_chauffe

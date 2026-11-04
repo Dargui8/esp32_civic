@@ -140,6 +140,7 @@ Catalogues constructeur reproduits par le réseau de vente de pièces Honda :
 Le propriétaire prévoit d’installer plus tard une sonde plus récente. La lambda est traitée séparément du matériel d’origine retenu pour le projet ; aucune référence de remplacement n’est choisie à ce stade. Les recherches sur l’ancienne sonde sont conservées ci-dessous à titre documentaire, sans tâche active pour identifier sa variante.
 
 - [ ] Choisir ultérieurement la sonde et, si nécessaire, son contrôleur compatible.
+- Programme d'un lecteur pour la LSU ADV (affichage, sortie Speeduino, chauffe selon la fiche) : [lecteur-lambda/](../lecteur-lambda/README.md). Son électronique reste à définir.
 - [ ] Documenter alors le câblage et la calibration correspondants dans Speeduino.
 
 ### Documentation disponible
