@@ -78,6 +78,13 @@ Une fois chaud, rien ne change. Au lancement et pendant la mise en température,
 - **Lambda** : figée à 25,5. Sans elle, impossible de régler la VE.
 - **Axe des tables** : VE et avance s'arrêtent à 25 % de papillon. Au-delà, c'est la dernière ligne qui sert.
 - **Vanne de ralenti** : `iacAlgorithm = None`, le Speeduino ne la pilote pas.
+  - Sur le papillon : une **vanne chauffée par l'eau du moteur**, qui fonctionne seule, et une **électrovanne de ralenti non raccordée** (indiqué par le propriétaire le 4/11).
+  - Une vanne de ce type, à cire ou à bilame, donne de l'air moteur froid et se ferme en chauffant ; Speeduino fonctionne avec ([wiki *Idle*](https://wiki.speeduino.com/en/configuration/Idle), § *Stand-Alone (Non-Electronic)*).
+  - Hypothèse : c'est elle qui fait baisser le ralenti à 19 h 29 (650 → 500 tr/min pendant que l'eau passe de 21 à 31 °C). Ni l'essence ni l'avance ne remplacent l'air qui manque.
+  - L'électrovanne s'ouvre selon le pourcentage de temps où elle est alimentée (PWM). Réglage : *Idle control* en PWM, puis la courbe « Idle - PWM Duty Cycle » (pourcentage selon la température d'eau) et « PWM Cranking Duty Cycle » (wiki *Idle*, § *PWM Settings*).
+  - Une vanne à 2 fils utilise une sortie, une vanne à 3 fils en utilise deux (wiki *Idle*, § *2 wire vs 3 wire valves*). Sur la carte v0.4 : Idle 1 = IDC 37 (broche Arduino 5), Idle 2 = IDC 36 (broche 6) ([wiki v0.4](https://wiki.speeduino.com/en/boards/v0.4) ; `init.cpp` 202402, `pinIdle1` et `pinIdle2`).
+  - Restent à trouver : le nombre de fils de la vanne, le fil qui va au 12 V et la fréquence qui convient à la vanne Honda.
+  - Certaines vannes restent entrouvertes débranchées ou à 0 % : à tester (wiki *Idle*, § *PWM*).
 - **Temps d'ouverture réel** des injecteurs Honda : à trouver (voir `fiches-techniques/README.md`).
 - **Une étincelle à la mise sous tension** (impression du propriétaire, 4/11). Le firmware coupe toutes les bobines dès qu'il démarre, pour éviter justement ces étincelles parasites ([init.cpp l. 316](https://github.com/speeduino/speeduino/blob/202402/speeduino/init.cpp#L316)). Avant cela, au reset, les broches de l'ATmega2560 sont en haute impédance (fiche technique, *I/O-Ports*). Hypothèse : la bobine voit cette entrée flottante pendant l'amorçage de la carte. Essai pour trancher : USB branché d'abord (calculateur déjà démarré), puis contact. Étincelle quand même = côté bobines ; plus d'étincelle = démarrage du calculateur.
 
