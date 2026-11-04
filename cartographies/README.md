@@ -4,6 +4,7 @@
 |---|---|
 | `2026-11-02-tune-actuel.msq` | Le tune actuel (`CurrentTune.msq` du 2 novembre 2026), copié tel quel. **Retour arrière** : recharger ce fichier. |
 | `2026-11-03-test-demarrage.msq` | Carto de test du 3 novembre 2026 : démarrage, ralenti et calage, **au garage**. Ne pas rouler avec. |
+| `2026-11-04-test-2-moins-riche.msq` | Carto de test 2 du 4 novembre 2026 : la même, **VE × 0,85 sauf la colonne 500 tr/min** (le lancement ne change pas). Motif : essence dans l'échappement après l'essai de 16 h 02, sans lambda pour mesurer. Au ralenti après l'enrichissement de démarrage : 8,5 ms au lieu de 9,7. Ne pas rouler avec. |
 
 ## Ce que change la carto de test
 
