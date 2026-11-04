@@ -44,7 +44,9 @@ Une fois chaud, rien ne change. Au lancement et pendant la mise en température,
 
 1. **Charger** `2026-11-03-test-demarrage.msq` dans TunerStudio et l'envoyer au calculateur (Burn).
 2. **Couper complètement le calculateur**, câble USB débranché, 10 s, puis le rallumer. Le firmware ne lit reqFuel qu'au démarrage du calculateur ([init.cpp l. 375](https://github.com/speeduino/speeduino/blob/202402/speeduino/init.cpp#L375)), alors que le temps d'ouverture s'applique tout de suite ([corrections.cpp l. 102](https://github.com/speeduino/speeduino/blob/202402/speeduino/corrections.cpp#L102)). **Contrôle** : au lancement, PW ≈ 17 ms. PW ≈ 9 ms = le calculateur n'a pas redémarré (cas du journal du 4/11, 13 h 31). Le rallumage déclenche aussi l'amorçage automatique (`primePulse`, environ 23 ms par injecteur à 12 °C) : il n'a lieu qu'à la mise sous tension du calculateur.
-3. **Lancer l'enregistrement du journal** avant de mettre le contact.
+   - **Le Speeduino reste alimenté par l'USB du PC contact coupé** (indiqué par le propriétaire le 4/11). Tant que l'USB est branché, remettre le contact ne redémarre pas le calculateur : ni nouveau reqFuel, ni amorçage.
+   - **Ordre à suivre à chaque essai** : USB débranché, contact coupé, 10 s → **contact mis** (le calculateur démarre sur le 12 V et amorce avec la pompe alimentée) → **USB rebranché**, TunerStudio connecté. Rebrancher l'USB avant le contact ferait l'amorçage sans 12 V, donc probablement sans essence (si la pompe et les injecteurs sont alimentés par le contact : montage habituel, à vérifier).
+3. **Lancer l'enregistrement du journal** dès que TunerStudio est connecté.
 4. **Démarrer sans toucher la pédale.** Pédale à fond = aucune injection (`tpsflood = 100 %`).
 5. **Au ralenti, régler le calage au stroboscope** sur le cylindre 1 : le calculateur impose 10°. Noter l'écart lu. Moins de 20° : on corrige Trigger Angle ; plus de 20° : autre problème (wiki *Honda D17*, même méthode).
 6. **Remettre Fixed Angle sur Off** (Spark Settings), Burn, puis 2 minutes de ralenti et quelques montées douces en régime.
