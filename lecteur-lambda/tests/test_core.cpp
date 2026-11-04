@@ -189,7 +189,8 @@ static void testEsrFormula() {
   printf("Mesure de Ri par injection (diviseur 22 kohm, creneau 3,3 V)\n");
   Rig r;
   for (float esr = 100.0f; esr <= 5000.0f; esr *= 1.5f) {
-    const float vac = 3.3f * (esr + 10.0f) / (22000.0f + esr + 10.0f);
+    const float rs = r.circuit.esrSeriesR_Ohm;
+    const float vac = 3.3f * (esr + rs) / (22000.0f + esr + rs);
     const float back = r.ctl.esrFromAc(vac);
     CHECK(fabsf(back - esr) < 0.01f * esr, "Ri %f -> %f", esr, back);
   }

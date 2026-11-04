@@ -30,7 +30,7 @@ struct LsuCircuit {
   // crête), autour de la masse virtuelle. Ri = R / (Vcc / Vac - 1) - Rserie.
   float esrDriveVpp_V = 3.3f;
   float esrDriveR_Ohm = 22000.0f;
-  float esrSeriesR_Ohm = 10.0f;  // rusEFI : VM_RESISTOR_VALUE
+  float esrSeriesR_Ohm = 0.0f;  // schéma : Nernst prise sur VM, R3 hors mesure (rusEFI : 10 Ω)
 
   // Mesure du courant de pompe : shunt de 61,9 Ω puis ampli x10 (rusEFI), autour d'une
   // tension de repos. Ip [mA] = (V - Vrepos) × 1000 / (gain × R).
@@ -39,9 +39,10 @@ struct LsuCircuit {
   float pumpSenseZero_V = 1.65f;  // nominal ; recalé automatiquement tant que la pompe est coupée
 
   // Commande du courant de pompe : PWM filtrée (« DAC ») puis convertisseur tension-courant.
+  // Schéma (docs/schema/) : source de Howland, Ip = (V - 1,65 V) / 316 Ω, soit +0,316 V/mA.
   // rusEFI : V = Vcc/2 - 0,000321162 V/µA × Ip, soit -0,321162 V/mA.
   float pumpDacZero_V = 1.65f;
-  float pumpDacVoltsPerMa = -0.321162f;
+  float pumpDacVoltsPerMa = 0.316f;
 };
 
 struct LsuControlConfig {

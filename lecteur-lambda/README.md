@@ -8,7 +8,7 @@ Le circuit d'évaluation que Bosch prévoit pour la LSU ADV (celui du LT4 ADV) e
 
 Le principe et les valeurs de référence viennent du contrôleur open source **rusEFI** ([mck1117/wideband](https://github.com/mck1117/wideband), licence MIT). Il pilote ainsi les LSU 4.2, 4.9 et ADV sans circuit Bosch. Ses fichiers sont cités valeur par valeur dans « Sources ».
 
-L'électronique n'existe pas encore : le programme tourne sur une **sonde simulée**, avec exactement le même code de pilotage que pour la vraie sonde.
+L'électronique n'existe pas encore : un **[schéma provisoire](docs/schema/README.md)** montre ce qu'il faut réaliser, et le programme tourne sur une **sonde simulée**, avec exactement le même code de pilotage que pour la vraie sonde.
 
 ## Cartes
 
@@ -43,14 +43,14 @@ L'électronique n'existe pas encore : le programme tourne sur une **sonde simul�
 
 À chaque échantillon (2,5 kHz sur le Pico, 2 kHz sur l'ESP32) :
 
-1. **Ri** : la sortie d'injection change de sens. L'écart de tension de Nernst entre les deux sens donne Ri = 22 kΩ ÷ (3,3 V ÷ écart − 1) − 10 Ω ; la moyenne donne la tension de Nernst. C'est la méthode de rusEFI.
+1. **Ri** : la sortie d'injection change de sens. L'écart de tension de Nernst entre les deux sens donne Ri = 22 kΩ ÷ (3,3 V ÷ écart − 1), moins la résistance série éventuelle (0 Ω sur le schéma, 10 Ω chez rusEFI) ; la moyenne donne la tension de Nernst. C'est la méthode de rusEFI.
 2. **Pompe**, à 500 Hz : un régulateur PI (kP 50 mA/V, kI 10 000 mA/V/s, valeurs rusEFI) règle le courant de pompe pour tenir la tension de Nernst à 450 mV.
 3. **Lambda** : le courant de pompe mesuré sur le shunt, filtré sur 20 ms, donne lambda par la table de la fiche Bosch.
 4. **Chauffe**, à 100 Hz : stratégie de la fiche puis régulation sur Ri = 300 Ω, détaillée plus bas.
 
 **Courant dans la cellule de Nernst.** Avec 22 kΩ et un créneau de 3,3 V, la cellule voit ±74 µA alternatifs autour d'un courant moyen de −20 µA, soit des pointes de +54 et −94 µA.
 - La fiche ADV limite la « charge en courant de la cellule de Nernst » à 80 µA sans préciser s'il s'agit de l'amplitude alternative ou du courant de crête. **Point à vérifier avant de brancher une vraie sonde** ; une résistance de 27 kΩ ramène la crête sous 80 µA (à reporter dans `config.h`).
-- Le courant moyen de −20 µA fait office de courant de référence pompé ; rusEFI utilise ce même montage. Il décale la tension de Nernst mesurée d'environ 6 mV, ce qui fausse lambda de +0,03 % à +0,26 % en simulation, très en dessous de la tolérance de la sonde.
+- Le courant moyen de −20 µA **sort** de l'électrode de référence : il l'appauvrirait en oxygène si la référence de l'ADV est « pompée » comme celle de la LSU 4.9, qui demande un courant entrant. Point à trancher ; le schéma prévoit une résistance R_REF en option ([schéma, point 1](docs/schema/README.md#points-à-trancher-avant-de-monter)). Ce courant décale aussi la tension de Nernst mesurée d'environ 6 mV, ce qui fausse lambda de +0,03 % à +0,26 % en simulation, très en dessous de la tolérance de la sonde.
 
 **Protections** :
 - **pompe seulement à chaud** : la pompe ne s'active que pendant la chauffe, une fois Ri ≤ 2,3 kΩ ; elle se coupe au-dessus de 3 kΩ. rusEFI l'active à 200 °C sous la consigne, soit environ 2,3 à 2,6 kΩ pour l'ADV d'après sa table ;
@@ -79,14 +79,14 @@ Le modèle de la sonde est approché (thermique d'un seul bloc, cavité du premi
 
 ## Ce que l'électronique devra réaliser
 
-Valeurs de rusEFI (carte f0_module), toutes reportées dans `config.h`, section 4. Une autre valeur se change là.
+Le **[schéma provisoire](docs/schema/README.md)** (trois feuilles, nomenclature, points à trancher) détaille ces blocs. Valeurs tirées de la carte rusEFI f0_module sauf mention, toutes reportées dans `config.h`, section 4. Une autre valeur se change là.
 
 | Bloc | À réaliser | Valeur de référence |
 |---|---|---|
-| Masse virtuelle | Tension stable sur VM/IPN, capable de fournir le courant de pompe | 1,65 V (Vcc ÷ 2) |
-| Commande de pompe | PWM filtrée (filtre du 2ᵉ ordre conseillé : la boucle tourne à 500 Hz) puis convertisseur tension-courant vers IP ; plage ±3 mA | V = 1,65 V − 0,321 V/mA × Ip |
+| Masse virtuelle | Tension stable sur VM/IPN, capable de fournir le courant de pompe | 1,65 V (Vcc ÷ 2), ampli suiveur puis 10 Ω |
+| Commande de pompe | PWM filtrée (Sallen-Key ~1 kHz ; la boucle tourne à 500 Hz) puis source de courant de Howland vers IP ; plage ±3 mA | Ip = (V − 1,65 V) ÷ 316 Ω, soit +0,316 V/mA (rusEFI : −0,321 V/mA) |
 | Mesure de pompe | Shunt en série avec IP, ampli référencé à 1,65 V vers l'ADC | 61,9 Ω, gain 10 (0,619 V/mA, ±2,6 mA mesurables) |
-| Mesure de Nernst | Ampli différentiel de (UN − VM) vers l'ADC | gain 2,7 |
+| Mesure de Nernst | Suiveur sur UN (pour ne pas charger l'injection), puis ampli différentiel de (UN − VM), VM prise sur la broche | gain 2,7 |
 | Injection | Sortie logique vers UN à travers une résistance | 22 kΩ, créneau 0/3,3 V |
 | Chauffage | MOSFET côté masse, grille tirée à la masse, fusible ; 8,7 W en régime établi d'après la fiche | PWM 200 Hz (fiche : ≥ 100 Hz) |
 | Batterie | Pont diviseur et protection | 10 kΩ / 2 kΩ |
@@ -228,6 +228,7 @@ pio run -e pico -t upload
 | `LecteurLambda/display.*`, `speeduino_out.*`, `format.h` | Écrans et sortie Speeduino |
 | `tests/` | Tests sur PC et tracé du cycle simulé |
 | `docs/cycle-chauffe-simule.*` | Cycle simulé : données (CSV) et graphe (SVG) |
+| `docs/schema/` | Schéma électronique provisoire (3 feuilles SVG), nomenclature, générateur `genere_schema.py` |
 
 ## Tests sur PC
 

@@ -73,20 +73,20 @@
 // -------------------------------------------------------------------------------------
 // 4. Circuit de pilotage direct (À CONFIRMER AVEC L'ÉLECTRONIQUE)
 // -------------------------------------------------------------------------------------
-// Valeurs de référence : contrôleur open source rusEFI (carte f0_module), voir README.
+// Valeurs du schéma provisoire (docs/schema/), tirées de la carte rusEFI f0_module sauf mention.
 // Cellule de Nernst : (UN - VM) amplifiée vers l'ADC.
 #define CIRCUIT_GAIN_NERNST 2.7f
 // Mesure de Ri : sortie logique 0 / 3,3 V à travers une résistance vers UN.
 #define CIRCUIT_R_INJECTION_OHM 22000.0f
 #define CIRCUIT_V_INJECTION_CC 3.3f   // amplitude crête à crête du créneau
-#define CIRCUIT_R_SERIE_VM_OHM 10.0f
+#define CIRCUIT_R_SERIE_VM_OHM 0.0f  // Nernst mesurée sur la broche VM : R3 hors mesure (rusEFI : 10)
 // Mesure du courant de pompe : shunt et ampli, autour d'une tension de repos.
 #define CIRCUIT_R_SHUNT_OHM 61.9f
 #define CIRCUIT_GAIN_SHUNT 10.0f
 #define CIRCUIT_ZERO_MESURE_V 1.65f   // recalé automatiquement tant que la pompe est coupée
 // Commande du courant de pompe : PWM filtrée -> convertisseur tension-courant.
 #define CIRCUIT_ZERO_POMPE_V 1.65f    // tension de commande donnant 0 mA
-#define CIRCUIT_V_PAR_MA_POMPE -0.321162f
+#define CIRCUIT_V_PAR_MA_POMPE 0.316f  // Howland, R10 = 316 Ω ; sens à vérifier au banc (rusEFI : -0,321162)
 // Tension batterie, par pont diviseur : 10 kΩ / 2 kΩ = 6.
 #define UBAT_PONT_DIVISEUR 6.0f
 
