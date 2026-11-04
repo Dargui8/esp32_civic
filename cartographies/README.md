@@ -66,7 +66,7 @@ Une fois chaud, rien ne change. Au lancement et pendant la mise en température,
 |---|---|
 | 4/11, 13 h 31 | Pas de démarrage. Calculateur non redémarré : 9,2 ms au lancement au lieu de 17 (ancien reqFuel). Essai non valable. |
 | 4/11, 13 h 40 | Pas de démarrage. Commande correcte (16,9 ms × 4, étincelle 5°, synchro complète). **Réservoir vide** (indiqué par le propriétaire). Bougies mouillées et noires. |
-| 4/11, 16 h 02 | **Démarre** après environ 6 s de lancement. **Ralenti 82 s** à 700-870 tr/min, calage fixe 10°, eau de 13 à 25 °C, injection de 11,0 à 9,2 ms à mesure que l'enrichissement de mise en température baisse. Montées jusqu'à environ 3 000 tr/min. 3 pertes de synchro au moment où il prend (7,7 à 8,8 s), aucune ensuite. Contact coupé à 91 s (tension batterie à 0), pas un calage. |
+| 4/11, 16 h 02 | **Démarre seul, sans mode test** (indiqué par le propriétaire), après environ 6 s de lancement. **Ralenti 82 s** à 700-870 tr/min, calage fixe 10°, eau de 13 à 25 °C, injection de 11,0 à 9,2 ms à mesure que l'enrichissement de mise en température baisse. Montées jusqu'à environ 3 000 tr/min. 3 pertes de synchro au moment où il prend (7,7 à 8,8 s), aucune ensuite. Contact coupé à 91 s (tension batterie à 0), pas un calage. |
 
 ## Ce qui restera à changer (relevé dans le tune et les journaux)
 
