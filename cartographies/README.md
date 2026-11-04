@@ -68,6 +68,7 @@ Une fois chaud, rien ne change. Au lancement et pendant la mise en température,
 | 4/11, 13 h 31 | Pas de démarrage. Calculateur non redémarré : 9,2 ms au lancement au lieu de 17 (ancien reqFuel). Essai non valable. |
 | 4/11, 13 h 40 | Pas de démarrage. Commande correcte (16,9 ms × 4, étincelle 5°, synchro complète). **Réservoir vide** (indiqué par le propriétaire). Bougies mouillées et noires. |
 | 4/11, 16 h 02 | **Démarre seul, sans mode test** (indiqué par le propriétaire), après environ 6 s de lancement. **Ralenti 82 s** à 700-870 tr/min, calage fixe 10°, eau de 13 à 25 °C, injection de 11,0 à 9,2 ms à mesure que l'enrichissement de mise en température baisse. Montées jusqu'à environ 3 000 tr/min. 3 pertes de synchro au moment où il prend (7,7 à 8,8 s), aucune ensuite. Contact coupé à 91 s (tension batterie à 0), pas un calage. |
+| 4/11, soir (journal non reçu) | Calages en essayant une marche arrière (indiqué par le propriétaire). Attendu avec ce tune : pas de pilotage du ralenti (`iacAlgorithm = None`) et dosage au papillon seul (Alpha-N, MAP figé), donc rien ne compense la charge à pied levé. |
 
 ## Ce qui restera à changer (relevé dans le tune et les journaux)
 
@@ -76,6 +77,7 @@ Une fois chaud, rien ne change. Au lancement et pendant la mise en température,
 - **Axe des tables** : VE et avance s'arrêtent à 25 % de papillon. Au-delà, c'est la dernière ligne qui sert.
 - **Vanne de ralenti** : `iacAlgorithm = None`, le Speeduino ne la pilote pas.
 - **Temps d'ouverture réel** des injecteurs Honda : à trouver (voir `fiches-techniques/README.md`).
+- **Une étincelle à la mise sous tension** (impression du propriétaire, 4/11). Le firmware coupe toutes les bobines dès qu'il démarre, pour éviter justement ces étincelles parasites ([init.cpp l. 316](https://github.com/speeduino/speeduino/blob/202402/speeduino/init.cpp#L316)). Avant cela, au reset, les broches de l'ATmega2560 sont en haute impédance (fiche technique, *I/O-Ports*). Hypothèse : la bobine voit cette entrée flottante pendant l'amorçage de la carte. Essai pour trancher : USB branché d'abord (calculateur déjà démarré), puis contact. Étincelle quand même = côté bobines ; plus d'étincelle = démarrage du calculateur.
 
 ## Sources
 
