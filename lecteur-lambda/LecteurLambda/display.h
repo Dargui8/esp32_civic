@@ -3,22 +3,13 @@
 
 #include <stdint.h>
 
-#include "heater.h"
-#include "lsu_adv.h"
+#include "lsu_driver.h"
 
 struct DisplayData {
+  LsuStatus s;         // état de la sonde (chauffe, pompe, Ri, défauts)
   float lambda;        // filtré pour l'affichage
   float afr;
-  bool valid;          // sonde au point de fonctionnement et lecture correcte
-  lsu::Range range;
-  HeaterPhase phase;
-  uint8_t faults;
-  float phaseTime_s;
-  float ri_Ohm;
-  float heater_V;      // tension efficace de chauffe appliquée
-  float ubat_V;
   float out_V;         // tension envoyée au Speeduino
-  bool supplyOk;
   bool simulation;
   bool outputForced;   // sortie imposée par la commande série « sortie »
 };

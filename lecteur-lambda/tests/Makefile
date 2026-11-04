@@ -1,11 +1,11 @@
-# Tests sur PC du cœur portable (table Bosch, conversions, chauffe).
+# Tests sur PC du cœur portable (table Bosch, pilotage direct, chauffe) sur la sonde simulée.
 #   make            compile et lance les tests
-#   make trace      écrit le cycle de chauffe simulé (CSV) et son graphe (SVG) dans ../docs
+#   make trace      écrit le cycle simulé (CSV) et son graphe (SVG) dans ../docs
 CXX ?= g++
-# -std=c++11 : même norme que le compilateur de l'Arduino Mega.
+# -std=c++11 : le code n'utilise que cette norme.
 CXXFLAGS ?= -std=c++11 -O2 -Wall -Wextra -Werror -Wshadow
 SRC_DIR := ../LecteurLambda
-CORE := $(SRC_DIR)/lsu_adv.cpp $(SRC_DIR)/heater.cpp $(SRC_DIR)/sensor_sim.cpp
+CORE := $(SRC_DIR)/lsu_adv.cpp $(SRC_DIR)/heater.cpp $(SRC_DIR)/lsu_driver.cpp $(SRC_DIR)/sim_hardware.cpp
 HEADERS := $(wildcard $(SRC_DIR)/*.h)
 
 all: test

@@ -7,7 +7,8 @@
 #include "format.h"
 #include "heater.h"
 #include "lsu_adv.h"
-#include "sensor_sim.h"
+#include "lsu_driver.h"
+#include "sim_hardware.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -161,157 +162,218 @@ static void testFormat() {
   CHECK(strlen(b) == 3, "tronque '%s'", b);
 }
 
-// Fait tourner la chauffe sur la sonde simulée et vérifie le cycle de la fiche.
-struct RunStats {
-  float tEnter[7];
-  float maxBoostTime, maxHoldTime;
-  float maxRampSlope;
-  float maxVoltage;
-  float maxDuty;
-  float maxTemp;
-  bool everNegativeDuty;
+
+// --- Système complet : pilotage direct sur la sonde simulée --------------------------
+
+struct Rig {
+  LsuCircuit circuit;
+  LsuControlConfig control;
+  HeaterConfig heater;
+  LsuController ctl;
+  SimLsuHardware sim;
+  LsuOutputs out;
+  float dt;
+  Rig() : ctl(circuit, control, heater), sim(circuit), dt(1.0f / control.sampleRate_Hz) {
+    out.esrDriveHigh = false;
+    out.pumpDuty = ctl.pumpDacVolts(0.0f) / circuit.vcc_V;
+    out.heaterDuty = 0.0f;
+  }
+  const LsuStatus& step() {
+    out = ctl.step(sim.step(out, dt));
+    return ctl.status();
+  }
+  long samples(float seconds) const { return (long)(seconds / dt + 0.5f); }
 };
 
-static void testHeaterCycle() {
-  printf("Cycle de chauffe sur sonde simulee (fiche Bosch, page 2)\n");
-  SimFrontEnd sim;
-  HeaterController h;
-  RunStats st;
-  for (int i = 0; i < 7; ++i) st.tEnter[i] = -1.0f;
-  st.maxBoostTime = st.maxHoldTime = st.maxRampSlope = st.maxVoltage = st.maxDuty = st.maxTemp = 0.0f;
-  st.everNegativeDuty = false;
+static void testEsrFormula() {
+  printf("Mesure de Ri par injection (diviseur 22 kohm, creneau 3,3 V)\n");
+  Rig r;
+  for (float esr = 100.0f; esr <= 5000.0f; esr *= 1.5f) {
+    const float vac = 3.3f * (esr + 10.0f) / (22000.0f + esr + 10.0f);
+    const float back = r.ctl.esrFromAc(vac);
+    CHECK(fabsf(back - esr) < 0.01f * esr, "Ri %f -> %f", esr, back);
+  }
+  CHECK(r.ctl.esrFromAc(0.0f) == 0.0f, "Vac nulle");
+  CHECK(r.ctl.esrFromAc(3.3f) >= 1.0e5f, "diviseur sature");
+  // Courants dans la cellule de Nernst avec la masse virtuelle à 1,65 V et Vn = 0,45 V.
+  const float iHigh = (3.3f - 1.65f - 0.45f) / 22310.0f * 1e6f;
+  const float iLow = (0.0f - 1.65f - 0.45f) / 22310.0f * 1e6f;
+  printf("  courant dans la cellule de Nernst : %+.0f / %+.0f uA, alternatif +-%.0f uA, moyen %+.0f uA\n", iHigh,
+         iLow, (iHigh - iLow) / 2, (iHigh + iLow) / 2);
+}
 
-  const float dt = 0.01f;
-  HeaterPhase prevPhase = h.phase();
-  float prevTarget = 0.0f;
-  float tReady = -1.0f;
-  float worstLambdaErr = 0.0f;
-  float riSumSq = 0.0f;
-  int riCount = 0;
-  float ueffSum = 0.0f;
-  for (int k = 0; k < 9000; ++k) {  // 90 s
-    const float t = k * dt;
-    const FrontEndSample s = sim.read();
-    h.update(dt, s.ri_Ohm, s.ubat_V);
-    sim.heaterApplied(h.appliedVoltage_V(), dt);
-
-    const HeaterPhase p = h.phase();
-    if (p != prevPhase && st.tEnter[(int)p] < 0.0f) st.tEnter[(int)p] = t;
-    if (p == HeaterPhase::Boost) st.maxBoostTime = fmaxf(st.maxBoostTime, h.phaseTime_s());
-    if (p == HeaterPhase::Hold) st.maxHoldTime = fmaxf(st.maxHoldTime, h.phaseTime_s());
-    if (p == HeaterPhase::Ramp && prevPhase == HeaterPhase::Ramp)
-      st.maxRampSlope = fmaxf(st.maxRampSlope, (h.targetVoltage_V() - prevTarget) / dt);
-    if (p == HeaterPhase::Condensation)
-      CHECK(fabsf(h.targetVoltage_V() - 2.0f) < 1e-6f, "condensation a %f V", h.targetVoltage_V());
-    if (p == HeaterPhase::Boost) CHECK(h.targetVoltage_V() == 12.0f, "boost a %f V", h.targetVoltage_V());
-    if (p == HeaterPhase::Hold) CHECK(h.targetVoltage_V() == 9.0f, "palier a %f V", h.targetVoltage_V());
-    st.maxVoltage = fmaxf(st.maxVoltage, h.appliedVoltage_V());
-    st.maxDuty = fmaxf(st.maxDuty, h.duty());
-    st.maxTemp = fmaxf(st.maxTemp, sim.sensorTemp_C());
-    if (h.duty() < 0.0f) st.everNegativeDuty = true;
-    if (h.ready() && tReady < 0.0f) tReady = t;
-
-    // Après 20 s de régulation : Ri tenue et lambda mesuré juste.
-    if (p == HeaterPhase::ClosedLoop && h.phaseTime_s() > 20.0f) {
-      const float e = s.ri_Ohm / 300.0f - 1.0f;
-      riSumSq += e * e;
-      ++riCount;
-      ueffSum += h.appliedVoltage_V();
-      CHECK(h.ready(), "plus pret a t=%.2f", t);
-      lsu::Range r;
-      const float l = lsu::ipToLambda(lsu::uaToIp_mA(s.ua_V, 17, 61.9f, 1.5f), &r);
-      worstLambdaErr = fmaxf(worstLambdaErr, fabsf(l - sim.trueLambda()));
+static void testFullCycle() {
+  printf("Cycle complet : chauffe de la fiche, Ri mesuree, pompe, lambda\n");
+  Rig r;
+  float tEnter[7];
+  for (int i = 0; i < 7; ++i) tEnter[i] = -1.0f;
+  HeaterPhase prev = r.ctl.status().phase;
+  float tPump = -1, tLock = -1, tValid = -1;
+  float worstEsrErr = 0, worstLambda = 0, nernstSq = 0, maxHeater = 0;
+  float pumpWhileCold = 0;
+  int n = 0;
+  for (long k = 0; k < r.samples(90.0f); ++k) {
+    const float t = k * r.dt;
+    const LsuStatus& s = r.step();
+    if (s.phase != prev && tEnter[(int)s.phase] < 0) tEnter[(int)s.phase] = t;
+    prev = s.phase;
+    if (s.pumpActive && tPump < 0) tPump = t;
+    if (s.locked && tLock < 0) tLock = t;
+    if (s.valid && tValid < 0) tValid = t;
+    if (r.sim.trueEsr_Ohm() > 3000.0f) pumpWhileCold = fmaxf(pumpWhileCold, fabsf(r.sim.pumpActual_mA()));
+    maxHeater = fmaxf(maxHeater, s.heater_V);
+    if (t > 60.0f) {
+      CHECK(s.valid, "mesure perdue a t=%.3f", t);
+      worstEsrErr = fmaxf(worstEsrErr, fabsf(s.esr_Ohm / r.sim.trueEsr_Ohm() - 1.0f));
+      worstLambda = fmaxf(worstLambda, fabsf(s.lambda - r.sim.trueLambda()));
+      nernstSq += (s.nernst_V - 0.45f) * (s.nernst_V - 0.45f);
+      ++n;
     }
-    prevPhase = p;
-    prevTarget = h.targetVoltage_V();
   }
-
-  printf("  attente moteur -> condensation : %.2f s\n", st.tEnter[(int)HeaterPhase::Condensation]);
-  printf("  chauffe 12 V a %.2f s, duree %.2f s ; palier 9 V a %.2f s, duree %.2f s\n",
-         st.tEnter[(int)HeaterPhase::Boost], st.maxBoostTime, st.tEnter[(int)HeaterPhase::Hold],
-         st.maxHoldTime);
-  printf("  rampe a %.2f s, pente maxi %.3f V/s ; regulation a %.2f s ; mesure prete a %.2f s\n",
-         st.tEnter[(int)HeaterPhase::Ramp], st.maxRampSlope, st.tEnter[(int)HeaterPhase::ClosedLoop],
-         tReady);
-  const float riRms = riCount ? sqrtf(riSumSq / riCount) : 1.0f;
-  printf("  regulation : ecart type de Ri %.2f %% ; tension moyenne %.2f V ; temperature maxi %.0f C\n",
-         riRms * 100.0f, riCount ? ueffSum / riCount : 0.0f, st.maxTemp);
-  printf("  erreur maximale de lambda en regulation : %.4f\n", worstLambdaErr);
-
-  CHECK(st.tEnter[(int)HeaterPhase::Condensation] > 2.9f && st.tEnter[(int)HeaterPhase::Condensation] < 3.2f,
-        "debut condensation %f", st.tEnter[(int)HeaterPhase::Condensation]);
-  CHECK(st.maxBoostTime <= 8.0f + 1e-3f, "boost %f s", st.maxBoostTime);
-  CHECK(st.maxHoldTime <= 1.5f + 1e-3f, "palier %f s", st.maxHoldTime);
-  CHECK(st.tEnter[(int)HeaterPhase::Ramp] > 0.0f, "pas de rampe");
-  CHECK(st.maxRampSlope <= 0.3f + 1e-3f, "pente %f V/s", st.maxRampSlope);
-  CHECK(st.tEnter[(int)HeaterPhase::ClosedLoop] > 0.0f, "jamais en regulation");
-  CHECK(st.tEnter[(int)HeaterPhase::Fault] < 0.0f, "defaut inattendu %s", heaterFaultName(h.faults()));
-  CHECK(st.maxVoltage <= 12.0f + 1e-3f, "tension %f V", st.maxVoltage);
-  CHECK(st.maxDuty <= 1.0f && !st.everNegativeDuty, "rapport cyclique");
-  CHECK(riRms < 0.02f, "Ri mal tenue : %.2f %%", riRms * 100.0f);
-  CHECK(worstLambdaErr < 0.003f, "lambda faux de %f", worstLambdaErr);
+  const LsuStatus& s = r.ctl.status();
+  printf("  condensation %.2f s, 12 V %.2f s, 9 V %.2f s, rampe %.2f s, regulation %.2f s\n",
+         tEnter[(int)HeaterPhase::Condensation], tEnter[(int)HeaterPhase::Boost], tEnter[(int)HeaterPhase::Hold],
+         tEnter[(int)HeaterPhase::Ramp], tEnter[(int)HeaterPhase::ClosedLoop]);
+  printf("  pompe active %.2f s, accrochee %.2f s, mesure valide %.2f s\n", tPump, tLock, tValid);
+  printf("  Ri mesuree / vraie : ecart max %.1f %% ; Nernst a %.1f mV rms de 450 mV ; zero de Ip %.4f V\n",
+         worstEsrErr * 100, 1000 * sqrtf(nernstSq / n), s.senseZero_V);
+  printf("  erreur max de lambda (profil variable) : %.4f ; tension de chauffe max %.2f V\n", worstLambda, maxHeater);
+  CHECK(tEnter[(int)HeaterPhase::ClosedLoop] > 0 && tEnter[(int)HeaterPhase::Fault] < 0, "chauffe");
+  CHECK(tPump > tEnter[(int)HeaterPhase::Boost], "pompe avant la chauffe");
+  CHECK(pumpWhileCold == 0.0f, "courant de pompe sonde froide : %f mA", pumpWhileCold);
+  CHECK(tValid > 0 && tValid < 40.0f, "mesure valide a %f s", tValid);
+  CHECK(worstEsrErr < 0.05f, "Ri faussee de %.1f %%", worstEsrErr * 100);
+  CHECK(fabsf(s.senseZero_V - (1.65f + 0.012f)) < 0.002f, "zero %f", s.senseZero_V);
+  CHECK(worstLambda < 0.02f, "lambda faux de %f", worstLambda);
+  CHECK(maxHeater <= 12.0f + 1e-3f, "chauffe %f V", maxHeater);
+  CHECK(s.pumpFaults == PUMP_FAULT_NONE && s.heaterFaults == HEATER_FAULT_NONE, "defauts %u %u", s.pumpFaults,
+        s.heaterFaults);
 }
 
-static void testHeaterDisturbance() {
-  printf("Regulation : gaz d'echappement +150 C puis -200 C\n");
-  SimFrontEnd sim;
-  HeaterController h;
-  const float dt = 0.01f;
-  float worstAfter = 0.0f;
-  for (int k = 0; k < 15000; ++k) {  // 150 s
-    const float t = k * dt;
-    if (k == 6000) sim.setExhaustOffset_C(150.0f);
-    if (k == 10000) sim.setExhaustOffset_C(-200.0f);
-    const FrontEndSample s = sim.read();
-    h.update(dt, s.ri_Ohm, s.ubat_V);
-    sim.heaterApplied(h.appliedVoltage_V(), dt);
-    const bool settled = (t > 75.0f && t < 100.0f) || t > 125.0f;  // 15 s après chaque saut
-    if (settled) worstAfter = fmaxf(worstAfter, fabsf(s.ri_Ohm / 300.0f - 1.0f));
+static void testLambdaAccuracy() {
+  printf("Lambda fixe : ecart moyen apres 45 s\n");
+  const float lambdas[] = {0.70f, 0.80f, 0.90f, 1.00f, 1.10f, 1.30f, 1.70f, 3.00f};
+  for (float lam : lambdas) {
+    Rig r;
+    r.sim.setLambdaOverride(lam);
+    double sum = 0;
+    int n = 0;
+    for (long k = 0; k < r.samples(50.0f); ++k) {
+      const LsuStatus& s = r.step();
+      if (k * r.dt > 45.0f) {
+        sum += s.lambda;
+        ++n;
+      }
+    }
+    const float err = (float)(sum / n) - lam;
+    printf("  lambda %.2f : mesure %.4f (%+.4f)\n", lam, sum / n, err);
+    // Écart systématique attendu : les 20 µA moyens de l'injection décalent la tension de
+    // Nernst mesurée d'environ 6 mV (rusEFI ne le corrige pas non plus).
+    CHECK(fabsf(err) < 0.003f * lam + 0.0005f, "lambda %.2f : ecart %f", lam, err);
   }
-  printf("  ecart de Ri 15 s apres chaque saut : %.2f %% ; phase finale %s\n", worstAfter * 100.0f,
-         heaterPhaseName(h.phase()));
-  CHECK(h.phase() == HeaterPhase::ClosedLoop, "phase %s", heaterPhaseName(h.phase()));
-  CHECK(worstAfter < 0.05f, "ecart %.2f %%", worstAfter * 100.0f);
 }
 
-static void testHeaterFaults() {
-  printf("Defauts de chauffe\n");
-  const float dt = 0.01f;
+static void testStepResponse() {
+  printf("Reponse a un saut de lambda 0,90 -> 1,10\n");
+  Rig r;
+  r.sim.setLambdaOverride(0.90f);
+  for (long k = 0; k < r.samples(45.0f); ++k) r.step();
+  r.sim.setLambdaOverride(1.10f);
+  float t90 = -1;
+  for (long k = 0; k < r.samples(1.0f); ++k) {
+    const LsuStatus& s = r.step();
+    if (t90 < 0 && s.lambda >= 0.90f + 0.9f * 0.20f) t90 = k * r.dt;
+  }
+  printf("  90 %% du saut atteints en %.0f ms (filtre de Ip compris)\n", t90 * 1000);
+  CHECK(t90 > 0 && t90 < 0.15f, "reponse %f s", t90);
+  CHECK(r.ctl.status().valid, "mesure perdue pendant le saut");
+}
 
+static void testDisturbance() {
+  printf("Regulation de chauffe : gaz +150 C puis -200 C\n");
+  Rig r;
+  float worst = 0;
+  for (long k = 0; k < r.samples(150.0f); ++k) {
+    const float t = k * r.dt;
+    if (k == r.samples(60.0f)) r.sim.setExhaustOffset_C(150.0f);
+    if (k == r.samples(100.0f)) r.sim.setExhaustOffset_C(-200.0f);
+    r.step();
+    if ((t > 75.0f && t < 100.0f) || t > 125.0f) worst = fmaxf(worst, fabsf(r.sim.trueEsr_Ohm() / 300.0f - 1.0f));
+  }
+  printf("  ecart de Ri 15 s apres chaque saut : %.2f %% ; phase finale %s\n", worst * 100,
+         heaterPhaseName(r.ctl.status().phase));
+  CHECK(r.ctl.status().phase == HeaterPhase::ClosedLoop && r.ctl.status().valid, "regulation perdue");
+  CHECK(worst < 0.05f, "ecart %.2f %%", worst * 100);
+}
+
+static void testPumpProtections() {
+  printf("Protections de la pompe\n");
+  // Convertisseur de pompe câblé à l'envers : la boucle part en butée.
+  {
+    Rig r;
+    r.sim.setPumpWiringReversed(true);
+    int faults = 0;
+    bool prevSat = false;
+    float worstPump = 0;
+    for (long k = 0; k < r.samples(120.0f); ++k) {
+      const LsuStatus& s = r.step();
+      const bool sat = s.pumpFaults & PUMP_FAULT_SATURATED;
+      if (sat && !prevSat) ++faults;
+      // Un échantillon de latence : le courant est coupé dès l'échantillon suivant.
+      if (sat && prevSat) worstPump = fmaxf(worstPump, fabsf(r.sim.pumpActual_mA()));
+      prevSat = sat;
+      CHECK(!s.valid, "mesure declaree valide avec la pompe inversee");
+    }
+    const LsuStatus& s = r.ctl.status();
+    printf("  pompe inversee : %d mises en defaut, %s\n", faults,
+           (s.pumpFaults & PUMP_FAULT_LATCHED) ? "pompe bloquee" : "non bloquee");
+    CHECK(s.pumpFaults & PUMP_FAULT_LATCHED, "blocage attendu");
+    CHECK(faults == 3, "%d mises en defaut au lieu de 3", faults);
+    CHECK(worstPump == 0.0f, "courant de pompe pendant le defaut : %f", worstPump);
+    CHECK(!s.pumpActive && s.pumpCommand_mA == 0.0f, "pompe encore commandee");
+  }
+  // Zéro de la mesure de Ip très faux : pompe jamais activée.
+  {
+    Rig r;
+    r.sim.setSenseZeroError_V(0.3f);
+    bool everActive = false;
+    for (long k = 0; k < r.samples(60.0f); ++k) everActive |= r.step().pumpActive;
+    printf("  zero de mesure decale de 0,3 V : defaut %u, pompe %s\n", r.ctl.status().pumpFaults,
+           everActive ? "activee" : "jamais activee");
+    CHECK(r.ctl.status().pumpFaults & PUMP_FAULT_ZERO, "defaut de zero attendu");
+    CHECK(!everActive, "pompe activee malgre le zero faux");
+  }
+}
+
+static void testHeaterOnly() {
+  printf("Chauffe seule : defauts et alimentation\n");
+  const float dt = 0.01f;
   // Ri non mesurée : aucune chauffe à l'aveugle au-delà de la condensation.
   {
-    SimFrontEnd sim;
     HeaterController h;
-    sim.setRiBroken(true);
     float maxAfterFault = 0.0f;
     for (int k = 0; k < 3000; ++k) {
-      const FrontEndSample s = sim.read();
-      h.update(dt, s.ri_Ohm, s.ubat_V);
-      sim.heaterApplied(h.appliedVoltage_V(), dt);
+      h.update(dt, NAN, 14.0f);
       if (h.phase() == HeaterPhase::Fault) maxAfterFault = fmaxf(maxAfterFault, h.duty());
     }
     CHECK(h.faults() & HEATER_FAULT_RI_MISSING, "defaut Ri absente attendu (%u)", h.faults());
     CHECK(maxAfterFault == 0.0f, "chauffe pendant le defaut");
   }
-
-  // Sonde qui ne chauffe jamais (chauffage coupé) : défaut de temps, puis blocage.
+  // Sonde qui ne chauffe jamais : défaut de temps, puis blocage après 3 essais.
   {
     HeaterController h;
     int faultsSeen = 0;
     HeaterPhase prev = h.phase();
-    for (int k = 0; k < 30000; ++k) {  // 300 s
+    for (int k = 0; k < 30000; ++k) {
       h.update(dt, 50000.0f, 14.0f);
       if (h.phase() == HeaterPhase::Fault && prev != HeaterPhase::Fault) ++faultsSeen;
       prev = h.phase();
     }
-    printf("  sonde qui ne chauffe pas : %d defauts, %s\n", faultsSeen,
-           (h.faults() & HEATER_FAULT_LATCHED) ? "chauffe bloquee" : "non bloquee");
     CHECK(h.faults() & HEATER_FAULT_WARMUP_TIMEOUT, "defaut de temps attendu");
     CHECK(h.faults() & HEATER_FAULT_LATCHED, "blocage attendu");
     CHECK(faultsSeen == 3, "%d tentatives au lieu de 3", faultsSeen);
     CHECK(h.duty() == 0.0f, "chauffe active apres blocage");
   }
-
   // Alimentation hors plage : chauffe coupée.
   {
     HeaterController h;
@@ -322,8 +384,6 @@ static void testHeaterFaults() {
     h.update(dt, 50000.0f, 17.0f);
     CHECK(h.duty() == 0.0f && !h.supplyOk(), "chauffe sous 17 V");
   }
-
-  // Rapport cyclique = (Ueff / Ubat)².
   CHECK(fabsf(HeaterController::dutyForVoltage(7.0f, 14.0f) - 0.25f) < 1e-6f, "7 V sous 14 V");
   CHECK(HeaterController::dutyForVoltage(12.0f, 11.0f) == 1.0f, "saturation");
   CHECK(HeaterController::dutyForVoltage(5.0f, NAN) == 0.0f, "Ubat NaN");
@@ -335,9 +395,13 @@ int main() {
   testLambdaConversion();
   testOutputMap();
   testFormat();
-  testHeaterCycle();
-  testHeaterDisturbance();
-  testHeaterFaults();
+  testEsrFormula();
+  testFullCycle();
+  testLambdaAccuracy();
+  testStepResponse();
+  testDisturbance();
+  testPumpProtections();
+  testHeaterOnly();
   printf("\n%d verifications, %d echec(s)\n", g_checks, g_failures);
   return g_failures == 0 ? 0 : 1;
 }

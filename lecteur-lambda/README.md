@@ -1,182 +1,120 @@
-# Lecteur de sonde lambda Bosch LSU ADV
+# Lecteur de sonde lambda Bosch LSU ADV, sans circuit Bosch
 
-Programme pour lire une sonde large bande **Bosch LSU ADV** avec un **ESP32**, un **Arduino Mega 2560** ou un **Raspberry Pi Pico**. Il fait trois choses :
+Le circuit d'évaluation que Bosch prévoit pour la LSU ADV (celui du LT4 ADV) est introuvable. Ici, c'est la carte qui fait son travail : elle **pilote la sonde directement**, à travers quelques amplificateurs opérationnels. Le programme :
 
-1. **Affiche la richesse** : lambda à 3 décimales, AFR, barre riche/pauvre, état de la chauffe. Écrans pris en charge : TFT ST7735 (celui de `jan31a`), OLED SSD1306 ou LCD 16 × 2 en I2C.
-2. **Envoie la richesse au Speeduino** : tension 0-5 V sur son entrée O2, avec 0 V = AFR 10 et 5 V = AFR 20, la même relation que le croquis `jan31a`.
-3. **Pilote le chauffage de la sonde** : PWM selon la stratégie de chauffe de la fiche Bosch, puis régulation de la température par la résistance interne Ri.
+1. **pilote la sonde** : il mesure la résistance interne Ri en injectant un courant alternatif, règle le courant de pompe pour tenir la cellule de Nernst à 450 mV, et chauffe selon la stratégie de la fiche Bosch ;
+2. **affiche la richesse** : lambda à 3 décimales, AFR, barre riche/pauvre, état. Écrans possibles : TFT ST7735 (celui de `jan31a`), OLED SSD1306 ou LCD 16 × 2 ;
+3. **envoie la richesse au Speeduino** : 0-5 V, avec 0 V = AFR 10 et 5 V = AFR 20, la même relation que `jan31a`.
 
-La partie électronique n'est pas encore définie : le programme tourne dès maintenant avec une **sonde simulée**, pour essayer l'écran, la sortie Speeduino et le cycle de chauffe sur table.
+Le principe et les valeurs de référence viennent du contrôleur open source **rusEFI** ([mck1117/wideband](https://github.com/mck1117/wideband), licence MIT). Il pilote ainsi les LSU 4.2, 4.9 et ADV sans circuit Bosch. Ses fichiers sont cités valeur par valeur dans « Sources ».
 
-Source principale : [fiche Bosch LSU ADV](../fiches-techniques/lambda/adv_pre_turbo.pdf) (51946891, 06/05/2021), page 2.
+L'électronique n'existe pas encore : le programme tourne sur une **sonde simulée**, avec exactement le même code de pilotage que pour la vraie sonde.
+
+## Cartes
+
+| Carte | Pilotage direct | Pourquoi |
+|---|---|---|
+| **Raspberry Pi Pico** | **conseillée** | second cœur réservé à la sonde (2,5 kHz) ; ADC 12 bits rapide |
+| ESP32 | possible | minuterie `esp_timer` à 2 kHz ; ADC moins linéaire |
+| Arduino Mega 2560 | **abandonnée** | ADC 10 bits limité à ~9 600 mesures/s, 16 MHz sans calcul flottant : trop juste pour la boucle à 2,5 kHz. La compilation pour la Mega s'arrête sur un message d'erreur. |
 
 ## État
 
 | Partie | État |
 |---|---|
-| Conversion de la mesure en lambda (table Bosch) | Faite, testée sur PC |
-| Stratégie de chauffe de la fiche, régulation, défauts | Faite, testée sur PC avec la sonde simulée |
-| Écrans ST7735, SSD1306, LCD 16 × 2 | Écrits, pas encore essayés sur un écran |
-| Sortie Speeduino (PWM filtrée ou MCP4725) | Écrite, pas encore mesurée au multimètre |
-| Compilation pour les trois cartes | **Pas encore faite** : seule la syntaxe a été contrôlée, avec des en-têtes Arduino simplifiés. C'est la première chose à faire au premier essai. |
-| Gains de la régulation de chauffe | Réglés sur la sonde simulée : **à revérifier sur la vraie sonde** |
-| Circuit d'évaluation de la sonde | **À choisir** (voir « Ce que l'électronique devra fournir ») |
+| Pilotage direct (Ri, pompe, chauffe), conversion en lambda | Fait, testé sur PC sur la sonde simulée |
+| Gains de la boucle de pompe | Ceux de rusEFI, éprouvés sur de vraies sondes. Le modèle simulé est calé pour qu'ils y soient stables : **la simulation ne prouve pas leur stabilité sur la vraie sonde** |
+| Gains de la régulation de chauffe | Réglés sur la sonde simulée : **à vérifier sur la vraie sonde** |
+| Circuit analogique | **À dessiner** (voir « Ce que l'électronique devra réaliser »). Le pilotage d'une vraie sonde reste bloqué à la compilation tant que ses valeurs ne sont pas vérifiées. |
+| Écrans, sortie Speeduino | Écrits, pas encore essayés sur du matériel |
+| Compilation pour le Pico et l'ESP32 | **Pas encore faite** : seule la syntaxe a été contrôlée, avec des en-têtes Arduino simplifiés. Première chose à faire au premier essai. |
 
-## Fichiers
+## Comment la carte remplace le circuit Bosch
 
-| Fichier | Rôle |
-|---|---|
-| `LecteurLambda/LecteurLambda.ino` | Croquis à ouvrir dans l'IDE Arduino |
-| `LecteurLambda/config.h` | **Tous les réglages** : carte, écran, sortie, mesure, brochage |
-| `LecteurLambda/lsu_adv.*` | Table Ip → lambda de la fiche, conversions |
-| `LecteurLambda/heater.*` | Stratégie de chauffe et régulation |
-| `LecteurLambda/sensor_sim.*` | Sonde simulée (essais sans électronique) |
-| `LecteurLambda/frontend_analog.*` | Lecture du vrai circuit : UA, UR, tension batterie (ADC interne ou ADS1115) |
-| `LecteurLambda/speeduino_out.*` | Sortie vers le Speeduino |
-| `LecteurLambda/display.*` | Écrans |
-| `LecteurLambda/hal.*` | PWM, convertisseur et chien de garde de chaque carte |
-| `LecteurLambda/app.*` | Boucle principale, journal série, commandes |
-| `platformio.ini` | Compilation avec PlatformIO |
-| `tests/` | Tests sur PC du cœur du programme et tracé du cycle de chauffe |
-| `docs/cycle-chauffe-simule.*` | Cycle de chauffe simulé : données (CSV) et graphe (SVG) |
-
-## Premier essai, en simulation
-
-**En simulation, aucune sonde ne doit être branchée** : la sortie de chauffe suit la sonde simulée, pas la vraie.
-
-### Avec l'IDE Arduino
-
-1. Installer le paquet de la carte :
-   - ESP32 : « esp32 » d'Espressif ;
-   - Mega : « Arduino AVR Boards » ;
-   - Pico : « Raspberry Pi Pico/RP2040 » d'Earle Philhower (pas le core Arduino Mbed).
-2. Installer les bibliothèques de l'écran choisi : « Adafruit GFX Library », puis « Adafruit ST7735 and ST7789 Library » ou « Adafruit SSD1306 ». Le LCD 16 × 2 et le MCP4725 n'en demandent pas.
-3. Ouvrir `LecteurLambda/LecteurLambda.ino`, choisir l'écran dans `config.h` (`CFG_ECRAN`), téléverser.
-
-### Avec PlatformIO
-
-```bash
-cd lecteur-lambda
+```
+                  ┌──────────────────── carte ────────────────────┐
+  sortie PWM pompe ─► filtre ─► convertisseur tension-courant ─► IP (broche 1)
+  ADC « Ip »       ◄─ ampli x10 ◄─ shunt 61,9 Ω (en série avec IP)
+  ADC « Nernst »   ◄─ ampli x2,7 de (UN - VM)
+  sortie injection ─► 22 kΩ ─► UN (broche 6, ou 5 sur l'ADV pre Turbo)
+  masse virtuelle 1,65 V ─► VM / IPN (broche 2), commune aux deux cellules
+  sortie PWM chauffe ─► MOSFET ─► H- (broche 3) ; H+ (broche 4) au +12 V
 ```
 
-```bash
-pio run -e esp32 -t upload
-```
+À chaque échantillon (2,5 kHz sur le Pico, 2 kHz sur l'ESP32) :
 
-Remplacer `esp32` par `mega` ou `pico` selon la carte.
+1. **Ri** : la sortie d'injection change de sens. L'écart de tension de Nernst entre les deux sens donne Ri = 22 kΩ ÷ (3,3 V ÷ écart − 1) − 10 Ω ; la moyenne donne la tension de Nernst. C'est la méthode de rusEFI.
+2. **Pompe**, à 500 Hz : un régulateur PI (kP 50 mA/V, kI 10 000 mA/V/s, valeurs rusEFI) règle le courant de pompe pour tenir la tension de Nernst à 450 mV.
+3. **Lambda** : le courant de pompe mesuré sur le shunt, filtré sur 20 ms, donne lambda par la table de la fiche Bosch.
+4. **Chauffe**, à 100 Hz : stratégie de la fiche puis régulation sur Ri = 300 Ω, détaillée plus bas.
 
-### Ce qu'on doit voir
+**Courant dans la cellule de Nernst.** Avec 22 kΩ et un créneau de 3,3 V, la cellule voit ±74 µA alternatifs autour d'un courant moyen de −20 µA, soit des pointes de +54 et −94 µA.
+- La fiche ADV limite la « charge en courant de la cellule de Nernst » à 80 µA sans préciser s'il s'agit de l'amplitude alternative ou du courant de crête. **Point à vérifier avant de brancher une vraie sonde** ; une résistance de 27 kΩ ramène la crête sous 80 µA (à reporter dans `config.h`).
+- Le courant moyen de −20 µA fait office de courant de référence pompé ; rusEFI utilise ce même montage. Il décale la tension de Nernst mesurée d'environ 6 mV, ce qui fausse lambda de +0,03 % à +0,26 % en simulation, très en dessous de la tolérance de la sonde.
 
-- L'écran passe par les phases de chauffe : attente moteur (3 s), condensation (10 s), 12 V, 9 V, rampe, puis régulation. La mesure devient exploitable vers 31 s.
-- Ensuite lambda oscille lentement entre environ 0,85 et 1,15.
-- Sur le moniteur série (115200 bauds), une ligne CSV toutes les 100 ms : temps, phase, UA, Ip, lambda, AFR, Ri, tension batterie, tension de chauffe, rapport cyclique, tension de sortie, mesure prête, défauts.
+**Protections** :
+- **pompe seulement à chaud** : la pompe ne s'active que pendant la chauffe, une fois Ri ≤ 2,3 kΩ ; elle se coupe au-dessus de 3 kΩ. rusEFI l'active à 200 °C sous la consigne, soit environ 2,3 à 2,6 kΩ pour l'ADV d'après sa table ;
+- **pompe en butée** plus de 0,5 s, signe d'un câblage ou d'un sens inversé : pompe coupée, deux nouveaux essais, puis pompe bloquée jusqu'au redémarrage ;
+- **zéro de la mesure de courant** : recalé tout seul tant que la pompe est coupée ; s'il s'écarte de plus de 0,15 V du nominal, la pompe reste coupée ;
+- **au démarrage**, chauffe coupée et pompe à 0 mA avant toute autre chose ;
+- **chien de garde** : il n'est nourri que si les deux boucles tournent. Si la boucle de la sonde se bloque, la carte redémarre ;
+- **vraie sonde bloquée à la compilation** tant que `CIRCUIT_VERIFIE` n'est pas défini dans `config.h`.
 
-Commandes série :
+## Résultats sur la sonde simulée
 
-| Commande | Effet |
+![Cycle simulé](docs/cycle-chauffe-simule.svg)
+
+| Essai (`tests/`) | Résultat |
 |---|---|
-| `sortie 2.35` | Impose 2,35 V au Speeduino : sert à calibrer la sortie au multimètre |
-| `sortie auto` | Revient à la mesure |
-| `lambda 0.90` | Impose lambda en simulation |
-| `lambda auto` | Revient au profil automatique de la simulation |
+| Cycle complet depuis le froid | pompe active à 21,2 s, mesure exploitable à 31,4 s, aucun défaut |
+| Ri mesurée par injection | à 0,2 % près de la vraie valeur |
+| Lambda fixe de 0,70 à 3,0 | écart moyen de +0,0003 à +0,0046 (≤ 0,26 %) |
+| Saut de lambda 0,90 → 1,10 | 90 % atteints en 60 ms |
+| Gaz +150 °C puis −200 °C | Ri revenue à 1,4 % près de 300 Ω au bout de 15 s |
+| Zéro de mesure faussé de 12 mV | retrouvé à 0,1 mV près |
+| Convertisseur de pompe câblé à l'envers | 3 mises en défaut puis pompe bloquée, mesure jamais déclarée valide |
+| Zéro de mesure faussé de 0,3 V | défaut, pompe jamais activée |
 
-Sur ESP32 et Mega, un potentiomètre peut aussi faire varier lambda de 0,70 à 1,30 en simulation (`SIMULATION_POTENTIOMETRE`, broche 33 ou A3).
+Le modèle de la sonde est approché (thermique d'un seul bloc, cavité du premier ordre, Ri d'après la table de rusEFI). Ces chiffres valident le **logiciel**, pas le comportement de la vraie sonde.
 
-## Brochage par défaut
+## Ce que l'électronique devra réaliser
 
-À modifier dans `config.h`, section 7.
+Valeurs de rusEFI (carte f0_module), toutes reportées dans `config.h`, section 4. Une autre valeur se change là.
 
-| Signal | ESP32 | Mega 2560 | Pico |
-|---|---|---|---|
-| UA (image de Ip) | 34 | A0 | GP26 |
-| UR (image de Ri) | 35 | A1 | GP27 |
-| Tension batterie (pont 10 kΩ / 2 kΩ) | 32 | A2 | GP28 |
-| PWM de chauffe vers le MOSFET | 26 (200 Hz, 12 bits) | 9 (490 Hz, 8 bits) | GP15 (200 Hz, 12 bits) |
-| Sortie PWM vers le Speeduino | 25 (15 kHz, 12 bits) | 11 (15,6 kHz, 10 bits) | GP13 (30 kHz, 12 bits) |
-| TFT : CS, DC, RST | 5, 2, 4 | 53, 49, 48 | GP17, GP20, GP21 |
-| TFT : SCK, MOSI | 18, 23 | 52, 51 | GP18, GP19 |
-| I2C : SDA, SCL | 21, 22 | 20, 21 | GP4, GP5 |
-
-La fiche demande une fréquence de chauffe d'au moins 100 Hz. Sur le Pico, chauffe et sortie sont sur deux tranches PWM différentes pour avoir deux fréquences.
-
-## Chauffe : la stratégie de la fiche
-
-![Cycle de chauffe simulé](docs/cycle-chauffe-simule.svg)
-
-| Phase | Tension efficace | Durée | Source |
-|---|---|---|---|
-| Attente moteur | 0 V | jusqu'à Ubat ≥ 13,2 V pendant 2 s (alternateur qui charge) | choix du programme |
-| Condensation | 2,0 V (fiche : 1,8 à 2 V) | 10 s, réglable : la fiche la dit « propre à l'application » | fiche + réglage |
-| Chauffe rapide | 12 V | 8 s au maximum | fiche |
-| Palier | 9 V | 1,5 s | fiche |
-| Rampe | +0,3 V/s au plus, plafond 12 V | jusqu'au point de fonctionnement (Ri ≤ 300 Ω) | fiche ; plafond et limite de 20 s ajoutés |
-| Régulation | régulateur PI sur ln(Ri ÷ 300 Ω), départ à 7,5 V, 0 à 12 V | permanente | 300 Ω et 7,5 V : fiche ; régulateur : programme |
-
-- **Tension efficace** : avec une PWM sous la tension batterie, U_eff = Ubat × √(rapport cyclique). Le programme mesure Ubat et calcule le rapport cyclique = (U_eff ÷ Ubat)².
-- **Passage en régulation** dès que Ri atteint 300 Ω, même pendant la chauffe à 12 V ou le palier : une sonde déjà chaude n'est pas surchauffée.
-- **Mesure exploitable** quand Ri reste à ±15 % de 300 Ω pendant 0,5 s ; perdue au-delà de ±30 %.
-- **Sécurités** (ajoutées, absentes de la fiche) :
-  - chauffe coupée si la batterie sort de 10,8-16,5 V, la plage d'alimentation de la fiche ;
-  - aucune chauffe au-delà de la condensation si Ri n'est pas mesurée ;
-  - défaut si le point de fonctionnement n'est pas atteint 20 s après le début de la rampe ;
-  - défaut si Ri dépasse 3 000 Ω ou descend sous 100 Ω plus de 3 s en régulation ;
-  - après un défaut, nouvel essai 10 s plus tard, deux fois au plus, puis chauffe bloquée jusqu'au redémarrage ;
-  - chien de garde : la carte redémarre si le programme se bloque. La sortie de chauffe est mise à 0 avant tout le reste.
-
-Sur la sonde simulée, la régulation est atteinte 17,5 s après le début de la chauffe rapide. 15 s après un saut de température des gaz (+150 °C, puis −200 °C), Ri est revenue à 1,5 % près de 300 Ω. **Ce modèle thermique est une approximation, pas la sonde réelle** : les gains `kp_V` et `ki_Vps` (`heater.h`) devront être vérifiés sur la vraie sonde, avec le journal série.
-
-## Mesure de la richesse
-
-1. **UA → Ip.** La fiche donne, à côté de Ip, la tension UA du circuit d'évaluation pour deux gains (v = 17 et v = 8). La relation UA = 1,5 V + v × 61,9 Ω × Ip redonne les 23 lignes à 0,5 mV près, aux deux gains (vérifié par les tests). Réglage par défaut : v = 17. Toute la plage de la sonde (lambda 0,65 à 5) tient alors entre 0,05 et 2,97 V, ce qui convient aux entrées 3,3 V.
-2. **Ip → lambda** par la table de la fiche (23 points). Entre deux points, l'interpolation est linéaire en 1/lambda, qui suit mieux la physique de la sonde qu'une interpolation linéaire en lambda. En retirant un point de la table puis en le recalculant, l'écart maximal est de 1,24 %, contre 1,61 % en linéaire. Avec la table complète, les points sont deux fois plus proches et l'erreur est plus faible.
-3. **Hors table** : sous lambda 0,65, l'écran affiche `<0.65` ; au-dessus de 5 (air libre, coupure d'injection), `AIR`.
-
-**Précision.** Autour de lambda 1, 0,001 de lambda vaut 1,14 mV sur UA (v = 17) : la précision affichée dépend de la chaîne de mesure.
-
-- **ESP32** : son ADC n'est précis qu'entre 150 et 2 450 mV à 11 dB ([Espressif](https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/api-reference/peripherals/adc.html)), soit lambda 0,67 à 2,7 environ avec v = 17.
-- **Mega** : son ADC fait 10 bits sur 5 V.
-- **Toutes les cartes** :
-  - la correction `UA_CORR_GAIN` et `UA_CORR_DECALAGE_V` se règle avec un voltmètre, en comparant à la colonne UA_V du journal ;
-  - pour une précision homogène, un **ADS1115** (16 bits, I2C) est prévu : `CFG_CONVERTISSEUR = CONVERTISSEUR_ADS1115`.
-
-La correction de pression de la fiche (graphe « Pressure Compensation ») n'est pas appliquée : moteur atmosphérique, sonde à pression proche de l'atmosphère.
-
-## Sortie vers le Speeduino
-
-- **Relation** : AFR = 10 + 2 × V (0 V = AFR 10,0 ; 2,35 V = lambda 1 ; 5 V = AFR 20,0), en essence à 14,7. Réglable dans `config.h`, section 3.
-- **TunerStudio** :
-  - *Tools → Calibrate AFR Table*, choisir *Custom Linear WB*, 0 V = 10, 5 V = 20 ;
-  - puis passer *EGO sensor type* (`egoType`) sur *Wide band*. Il est sur *Disabled* dans la carto de test et sur *Narrow Band* dans le tune actuel.
-- **Entrée du Speeduino** : broche A8 sur la carte v0.4 (`init.cpp` 202402, ligne 1484). Le schéma v0.4 montre une résistance série de 470 Ω, des condensateurs et des diodes d'écrêtage, sans pont diviseur : la tension arrive telle quelle.
-- **Pendant la chauffe et en défaut**, la sortie est à **5 V (AFR 20)**. Le firmware 202402 ne corrige que si `ego_min < O2 < ego_max` ([corrections.cpp, ligne 618](https://github.com/speeduino/speeduino/blob/202402/speeduino/corrections.cpp#L618)) ; au-delà, la correction revient à 100 %. Avec `ego_max_afr = 17` dans le tune, aucune correction n'est donc appliquée tant que la mesure n'est pas prête. **Garder `ego_max_afr` sous 20.**
-- Si la protection AFR (`afrProtectEnabled`, coupée dans le tune) est activée un jour : elle verra AFR 20 pendant la chauffe et en défaut. Ses conditions du tune (180 kPa, 4 000 tr/min, 80 % de papillon) la rendent peu probable à la chauffe ; un défaut de sonde en pleine charge déclencherait la coupure.
-
-**Étage de sortie** (`CFG_SORTIE`) :
-
-| Choix | Mega | ESP32 et Pico |
+| Bloc | À réaliser | Valeur de référence |
 |---|---|---|
-| PWM filtrée | filtre RC direct (sortie 5 V) | filtre RC puis ampli ×1,52 pour passer de 3,3 à 5 V ; sans ampli, mettre `SORTIE_PLEINE_ECHELLE_V` à 3.3 et revoir la relation |
-| MCP4725 alimenté en 5 V | direct | adaptateur de niveaux I2C à prévoir (circuit en 5 V, carte en 3,3 V ; à confirmer sur la fiche du MCP4725) |
+| Masse virtuelle | Tension stable sur VM/IPN, capable de fournir le courant de pompe | 1,65 V (Vcc ÷ 2) |
+| Commande de pompe | PWM filtrée (filtre du 2ᵉ ordre conseillé : la boucle tourne à 500 Hz) puis convertisseur tension-courant vers IP ; plage ±3 mA | V = 1,65 V − 0,321 V/mA × Ip |
+| Mesure de pompe | Shunt en série avec IP, ampli référencé à 1,65 V vers l'ADC | 61,9 Ω, gain 10 (0,619 V/mA, ±2,6 mA mesurables) |
+| Mesure de Nernst | Ampli différentiel de (UN − VM) vers l'ADC | gain 2,7 |
+| Injection | Sortie logique vers UN à travers une résistance | 22 kΩ, créneau 0/3,3 V |
+| Chauffage | MOSFET côté masse, grille tirée à la masse, fusible ; 8,7 W en régime établi d'après la fiche | PWM 200 Hz (fiche : ≥ 100 Hz) |
+| Batterie | Pont diviseur et protection | 10 kΩ / 2 kΩ |
+| Sortie Speeduino | Filtre RC et ampli ×1,52 (3,3 → 5 V), ou MCP4725 en 5 V | voir plus bas |
 
-Pour la calibration : `sortie 1.00` puis `sortie 4.00` au moniteur série, mesurer au multimètre sur l'entrée O2 du Speeduino, et reporter l'écart dans `SORTIE_CORR_GAIN` et `SORTIE_CORR_DECALAGE_V`.
+**Points d'attention** :
+- **Pompe à 0 mA au démarrage.** Le nœud de commande de la pompe doit rester à 1,65 V tant que le programme n'a pas démarré, par exemple avec un pont diviseur. Sinon un courant peut traverser la sonde à froid.
+- **Une seule référence.** Les amplis et l'ADC doivent partager la même référence 3,3 V : les mesures sont alors ratiométriques.
+- **Chauffage.** La résistance à froid n'est pas dans la fiche. Le courant de crête, Ubat ÷ cette résistance, est à mesurer pour dimensionner le MOSFET et le fusible.
+- **Protection des entrées.** Toutes les entrées reliées au faisceau doivent être protégées contre les surtensions de la voiture.
 
-## Ce que l'électronique devra fournir
+**Brochage par défaut** (`config.h`, section 7) :
 
-La fiche indique que la LSU ADV ne fonctionne qu'avec une unité d'évaluation spécialisée (celle du LT4 ADV de Bosch) : la sonde ne donne pas directement une tension exploitable. Le programme attend de ce circuit :
-
-| Signal | Attendu | Dans le programme |
+| Signal | Pico | ESP32 |
 |---|---|---|
-| UA | Image du courant de pompe : UA = 1,5 V + v × 61,9 Ω × Ip | `LSU_UA_ZERO_V`, `LSU_SHUNT_OHM`, `LSU_GAIN` |
-| UR | Image de la résistance interne Ri de la cellule de Nernst. Fiche : 300 Ω nominal, courant dans la cellule ≤ 80 µA | `UR_DECALAGE_V`, `RI_OHM_PAR_V`, fonction `urToRi()` |
-| Ubat | Tension d'alimentation du chauffage, par pont diviseur | `UBAT_PONT_DIVISEUR` |
-| Chauffage | MOSFET côté masse commandé par la PWM ; 8,7 W en régime établi d'après la fiche | broche `PIN_CHAUFFE` |
-
-- **Mesure de Ri obligatoire.** La compilation en mesure analogique est **bloquée** tant que la relation UR → Ri n'est pas renseignée et `RI_CALIBRATION_FAITE` défini. Une régulation sur une Ri fausse surchaufferait la sonde.
-- **Courant de chauffe** : en crête, Ubat ÷ résistance du chauffage ; il est plus élevé à froid. La résistance à froid ne figure pas dans la fiche : elle est à mesurer pour dimensionner le MOSFET et le fusible.
+| ADC Nernst | GP26 | 34 |
+| ADC Ip (shunt) | GP27 | 35 |
+| ADC batterie | GP28 | 32 |
+| Injection pour Ri | GP14 | 27 |
+| PWM pompe | GP10 (30 kHz, 12 bits) | 33 (19 kHz, 12 bits) |
+| PWM chauffe | GP15 (200 Hz) | 26 (200 Hz) |
+| PWM sortie Speeduino | GP13 (30 kHz) | 25 (15 kHz) |
+| TFT : CS, DC, RST / SCK, MOSI | GP17, GP20, GP21 / GP18, GP19 | 5, 2, 4 / 18, 23 |
+| I2C : SDA, SCL | GP4, GP5 | 21, 22 |
 
 **Brochage de la sonde** (fiche, pages 2 et 3) :
 
-| Broche | LSU ADV, connecteur auto 1 928 404 669 | LSU ADV pre Turbo, connecteur auto 1254.488.136 |
+| Broche | LSU ADV, connecteur 1 928 404 669 | LSU ADV pre Turbo, connecteur 1254.488.136 |
 |---|---|---|
 | 1 | IP / APE | IP / APE |
 | 2 | VM / IPN | VM / IPN |
@@ -185,7 +123,111 @@ La fiche indique que la LSU ADV ne fonctionne qu'avec une unité d'évaluation s
 | 5 | non connectée | UN / RE |
 | 6 | UN / RE | — |
 
-Contre-pièces : F02U.B00.725-01 (ADV) et F02U.B00.937-01 (ADV pre Turbo). La version à connecteur motorsport a un autre brochage (fiche, pages 2 et 3).
+Contre-pièces : F02U.B00.725-01 (ADV) et F02U.B00.937-01 (pre Turbo). La version à connecteur motorsport a un autre brochage (fiche, pages 2 et 3).
+
+## Premier essai, en simulation
+
+**En simulation, aucune sonde ne doit être branchée** : les sorties de pompe, d'injection et de chauffe suivent la sonde simulée.
+
+1. **Installer le core de la carte** :
+   - Pico : « Raspberry Pi Pico/RP2040 » d'Earle Philhower, pas le core Arduino Mbed ;
+   - ESP32 : « esp32 » d'Espressif.
+2. **Installer les bibliothèques de l'écran** : « Adafruit GFX Library », puis « Adafruit ST7735 and ST7789 Library » ou « Adafruit SSD1306 ». Le LCD 16 × 2 et le MCP4725 n'en demandent pas.
+3. **Ouvrir** `LecteurLambda/LecteurLambda.ino`, choisir l'écran dans `config.h`, téléverser. Avec PlatformIO :
+
+```bash
+cd lecteur-lambda
+```
+
+```bash
+pio run -e pico -t upload
+```
+
+**Ce qu'on doit voir** :
+- l'écran passe par les phases de chauffe, puis « ACCROCHAGE POMPE » ;
+- la mesure devient exploitable vers 31 s ;
+- lambda oscille ensuite entre environ 0,85 et 1,15.
+
+**Le journal série** (115200 bauds) donne une ligne CSV toutes les 100 ms : phase, tension de Nernst, Ri, courant de pompe commandé et mesuré, lambda, AFR, batterie, chauffe, état de la pompe, sortie, défauts.
+
+| Commande série | Effet |
+|---|---|
+| `sortie 2.35` | Impose 2,35 V au Speeduino, pour calibrer la sortie au multimètre |
+| `sortie auto` | Revient à la mesure |
+| `lambda 0.90` | Impose lambda en simulation |
+| `lambda auto` | Revient au profil automatique |
+
+## Mise en service sur la vraie sonde
+
+À faire dans cet ordre, en suivant le journal série.
+
+1. **Sans sonde.** Vérifier :
+   - la masse virtuelle à 1,65 V ;
+   - le nœud de commande de pompe à 1,65 V au démarrage ;
+   - la colonne `Ip_mA` autour de 0.
+2. **Avec des résistances à la place de la sonde** : environ 100 Ω entre IP et VM, et 300 Ω entre UN et VM.
+   - Alimenter sous 12 V : sous 13,2 V, la chauffe et la pompe restent à l'arrêt. Une résistance ne donne aucune tension de Nernst, et la pompe partirait en butée.
+   - La colonne `Ri_ohm` doit lire environ 300 : cela valide la mesure par injection.
+3. **Reporter les valeurs mesurées** du circuit dans `config.h`, section 4, puis définir `CIRCUIT_VERIFIE` et passer `CFG_MESURE` à `MESURE_SONDE`.
+4. **Sonde à l'air libre, moteur arrêté**, alimentation de laboratoire à 13,5-14 V :
+   - Ri descend vers 300 Ω ;
+   - la pompe s'active puis s'accroche, avec `Nernst_V` stable près de 0,45 ;
+   - l'écran affiche `AIR`, car à l'air libre lambda est au-delà de 5.
+   Si la tension de Nernst oscille fort ou si la pompe passe en défaut de butée, revoir le sens du convertisseur de pompe, puis les gains de pompe dans `lsu_driver.h`.
+5. **Sur la voiture** : vérifier la régulation de chauffe sur la durée, au ralenti et en charge, avec le journal. La sortie Speeduino se calibre au multimètre avec `sortie 1.00` puis `sortie 4.00`.
+
+## Chauffe : la stratégie de la fiche
+
+| Phase | Tension efficace | Durée | Source |
+|---|---|---|---|
+| Attente moteur | 0 V | jusqu'à Ubat ≥ 13,2 V pendant 2 s (alternateur qui charge) | choix du programme |
+| Condensation | 2,0 V (fiche : 1,8 à 2 V) | 10 s, réglable : « propre à l'application » | fiche + réglage |
+| Chauffe rapide | 12 V | 8 s au maximum | fiche |
+| Palier | 9 V | 1,5 s | fiche |
+| Rampe | +0,3 V/s au plus, plafond 12 V | jusqu'à Ri ≤ 300 Ω | fiche ; plafond et limite de 20 s ajoutés |
+| Régulation | régulateur PI sur ln(Ri ÷ 300 Ω), départ à 7,5 V | permanente | 300 Ω et 7,5 V : fiche ; régulateur : programme |
+
+- **Tension efficace** : avec une PWM sous Ubat, U_eff = Ubat × √(rapport cyclique). Le programme calcule le rapport cyclique = (U_eff ÷ Ubat)².
+- **Régulation anticipée** : elle commence dès que Ri atteint 300 Ω, même pendant la chauffe rapide.
+- **Sécurités** :
+  - chauffe coupée hors 10,8-16,5 V, la plage d'alimentation de la fiche ;
+  - défaut si Ri n'atteint pas 300 Ω 20 s après le début de la rampe ;
+  - défaut si Ri sort de 100 à 3 000 Ω plus de 3 s en régulation ;
+  - après un défaut, deux nouveaux essais, puis chauffe bloquée jusqu'au redémarrage.
+- **Comparaison avec rusEFI** : 2 V pendant 5 s, rampe depuis 7 V à 0,4 V/s jusqu'à 12 V, régulation en partant de 7,5 V. Le programme suit la fiche de l'ADV plutôt que ces valeurs.
+
+## Mesure de la richesse
+
+- **Ip → lambda** par la table de la fiche (23 points), interpolée en 1/lambda. En retirant un point puis en le recalculant, l'écart maximal est de 1,24 %, contre 1,61 % en interpolation linéaire. rusEFI utilise des courbes ajustées sur la même plage.
+- **Hors table** : sous lambda 0,65, l'écran affiche `<0.65` ; au-dessus de 5 (air libre, coupure d'injection), `AIR`.
+- **Pression des gaz** : la correction de la fiche n'est pas appliquée. Le moteur est atmosphérique et la sonde travaille à une pression proche de l'atmosphère.
+- **Précision** : elle dépend de la mesure du courant de pompe. Avec 0,619 V/mA, 0,001 de lambda vaut environ 0,65 mV autour de lambda 1. Le zéro est recalé automatiquement ; le gain dépend de la précision du shunt et de l'ampli (résistances à 0,1 % conseillées).
+
+## Sortie vers le Speeduino
+
+- **Relation** : AFR = 10 + 2 × V, soit 0 V = AFR 10, 2,35 V = lambda 1 et 5 V = AFR 20, en essence à 14,7 (`config.h`, section 3).
+- **TunerStudio** :
+  - *Tools → Calibrate AFR Table*, choisir *Custom Linear WB*, 0 V = 10, 5 V = 20 ;
+  - puis passer *EGO sensor type* (`egoType`) sur *Wide band*. Il est sur *Disabled* dans la carto de test et sur *Narrow Band* dans le tune actuel.
+- **Entrée du Speeduino** : A8 sur la carte v0.4 (`init.cpp` 202402, ligne 1484), avec 470 Ω en série, des condensateurs et des diodes d'écrêtage, sans pont diviseur (schéma v0.4).
+- **Pendant la chauffe et en défaut**, la sortie est à **5 V (AFR 20)**. Le firmware 202402 ne corrige que si `ego_min < O2 < ego_max` ([corrections.cpp, ligne 618](https://github.com/speeduino/speeduino/blob/202402/speeduino/corrections.cpp#L618)) ; avec `ego_max_afr = 17`, aucune correction n'est donc appliquée tant que la mesure n'est pas prête. **Garder `ego_max_afr` sous 20.**
+- **Étage de sortie** : PWM filtrée puis ampli ×1,52, ou MCP4725 alimenté en 5 V, avec un adaptateur de niveaux I2C à prévoir (3,3 V côté carte, à confirmer sur la fiche du MCP4725). Calibration avec `sortie 1.00` et `sortie 4.00`, écarts reportés dans `SORTIE_CORR_GAIN` et `SORTIE_CORR_DECALAGE_V`.
+
+## Fichiers
+
+| Fichier | Rôle |
+|---|---|
+| `LecteurLambda/LecteurLambda.ino` | Croquis à ouvrir dans l'IDE Arduino |
+| `LecteurLambda/config.h` | **Tous les réglages** : mode, écran, sortie, circuit, brochage |
+| `LecteurLambda/lsu_driver.*` | Pilotage direct : Ri par injection, boucle de pompe, coordination avec la chauffe |
+| `LecteurLambda/heater.*` | Stratégie de chauffe de la fiche et régulation sur Ri |
+| `LecteurLambda/lsu_adv.*` | Table Ip → lambda de la fiche, conversions |
+| `LecteurLambda/sim_hardware.*` | Sonde et circuit simulés, échantillon par échantillon |
+| `LecteurLambda/hal.*` | PWM, ADC, second cœur ou minuterie, verrou, chien de garde |
+| `LecteurLambda/app.*` | Boucle rapide et boucle principale, journal, commandes |
+| `LecteurLambda/display.*`, `speeduino_out.*`, `format.h` | Écrans et sortie Speeduino |
+| `tests/` | Tests sur PC et tracé du cycle simulé |
+| `docs/cycle-chauffe-simule.*` | Cycle simulé : données (CSV) et graphe (SVG) |
 
 ## Tests sur PC
 
@@ -197,23 +239,30 @@ cd lecteur-lambda/tests
 make
 ```
 
-Ils vérifient :
-- la table Bosch et la relation UA ↔ Ip, colonne par colonne ;
-- la conversion en lambda : nœuds, monotonie, aller-retour, hors table ;
-- la sortie 0-5 V ;
-- la mise en forme de l'écran ;
-- le cycle de chauffe complet sur la sonde simulée : durées, tensions, pente de la rampe, plafond de 12 V, tenue de Ri, justesse de lambda ;
-- les sauts de température des gaz ;
-- les défauts et le blocage.
+**Ce qu'ils vérifient** :
+- la table Bosch et la relation UA ↔ Ip de la fiche ;
+- la conversion en lambda ;
+- la sortie 0-5 V et la mise en forme de l'écran ;
+- la formule de Ri ;
+- le cycle complet sur la sonde simulée ;
+- la précision de lambda, la réponse à un saut, la tenue de la chauffe ;
+- les protections de la pompe et de la chauffe.
 
-Résultat actuel : 11 728 vérifications, 0 échec. `make trace` régénère `docs/cycle-chauffe-simule.csv` et le graphe.
+Résultat actuel : 380 856 vérifications, 0 échec. `make trace` régénère le graphe.
 
 ## Sources
 
-- Fiche Bosch Motorsport « Lambda Sensor LSU ADV/ADV pre Turbo », 51946891, 06/05/2021 : [fiches-techniques/lambda/adv_pre_turbo.pdf](../fiches-techniques/lambda/adv_pre_turbo.pdf), table Ip/lambda/UA et stratégie de chauffe p. 2, brochage p. 2-3.
-- Firmware Speeduino 202402 :
-  - [corrections.cpp, ligne 618](https://github.com/speeduino/speeduino/blob/202402/speeduino/corrections.cpp#L618) : fenêtre `ego_min` / `ego_max` ;
-  - [sensors.cpp, `readO2`](https://github.com/speeduino/speeduino/blob/202402/speeduino/sensors.cpp#L596) : lecture de l'entrée O2 ;
-  - [init.cpp, ligne 1484](https://github.com/speeduino/speeduino/blob/202402/speeduino/init.cpp#L1484) : `pinO2 = A8` sur la v0.4.
-- Schéma Speeduino v0.4 : [fiches-techniques/speeduino/](../fiches-techniques/speeduino/), entrée O2.
-- Tune actuel : [cartographies/2026-11-02-tune-actuel.msq](../cartographies/2026-11-02-tune-actuel.msq) (`ego_min_afr` 10, `ego_max_afr` 17, `ego_sdelay` 15 s).
+- **Fiche Bosch** Motorsport « Lambda Sensor LSU ADV/ADV pre Turbo », 51946891, 06/05/2021 : [fiches-techniques/lambda/adv_pre_turbo.pdf](../fiches-techniques/lambda/adv_pre_turbo.pdf). Table Ip/lambda, stratégie de chauffe, Ri nominale de 300 Ω, courant de 80 µA au plus dans la cellule de Nernst et chauffage ≥ 100 Hz en p. 1-2 ; brochage en p. 2-3.
+- **rusEFI wideband**, [github.com/mck1117/wideband](https://github.com/mck1117/wideband), licence MIT :
+  - `firmware/wideband_config.h` : consigne de Nernst 0,45 V, shunt 61,9 Ω, gain 10 ;
+  - `firmware/pump_control.cpp` : PI de pompe kP 50, kI 10 000, 500 Hz ; pompe seulement à chaud ;
+  - `firmware/pump_dac.cpp` : −0,000321162 V/µA autour de Vcc ÷ 2 ;
+  - `firmware/sampling.cpp` : démodulation de Ri sur trois échantillons, table Ri → température de l'ADV ;
+  - `firmware/heater_thread.cpp` : ADV à 785 °C et 300 Ω ;
+  - `firmware/boards/f0_module/` : 22 kΩ d'injection, gain de Nernst 2,7, 10 Ω sur VM, ADC 3,3 V.
+- **Firmware Speeduino 202402** :
+  - [corrections.cpp, ligne 618](https://github.com/speeduino/speeduino/blob/202402/speeduino/corrections.cpp#L618) : fenêtre `ego_min`/`ego_max` ;
+  - [sensors.cpp, `readO2`](https://github.com/speeduino/speeduino/blob/202402/speeduino/sensors.cpp#L596) ;
+  - [init.cpp, ligne 1484](https://github.com/speeduino/speeduino/blob/202402/speeduino/init.cpp#L1484) : `pinO2 = A8`.
+- **Schéma Speeduino v0.4** : [fiches-techniques/speeduino/](../fiches-techniques/speeduino/), entrée O2.
+- **Tune actuel** : [cartographies/2026-11-02-tune-actuel.msq](../cartographies/2026-11-02-tune-actuel.msq).

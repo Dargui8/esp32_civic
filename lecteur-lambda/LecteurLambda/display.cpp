@@ -39,11 +39,11 @@ void padRight(char* b, uint8_t size, uint8_t width) {
 
 // Toujours 5 caractères.
 void lambdaText(char* b, uint8_t size, const DisplayData& d) {
-  if (!d.valid) {
+  if (!d.s.valid) {
     copyText(b, size, "-.---");
-  } else if (d.range == lsu::Range::LeanLimit) {
+  } else if (d.s.range == lsu::Range::LeanLimit) {
     copyText(b, size, "  AIR");
-  } else if (d.range == lsu::Range::RichLimit) {
+  } else if (d.s.range == lsu::Range::RichLimit) {
     copyText(b, size, "<0.65");
   } else {
     formatFixed(b, size, d.lambda, 3, 5);
@@ -52,7 +52,7 @@ void lambdaText(char* b, uint8_t size, const DisplayData& d) {
 
 // Toujours 5 caractères.
 void afrText(char* b, uint8_t size, const DisplayData& d) {
-  if (!d.valid || d.range != lsu::Range::InTable) {
+  if (!d.s.valid || d.s.range != lsu::Range::InTable) {
     copyText(b, size, "--.--");
   } else {
     formatFixed(b, size, d.afr, 2, 5);
@@ -71,21 +71,30 @@ void riText(char* b, uint8_t size, float ri) {
 }
 
 // Message d'état, du plus important au moins important.
+void appendLatched(char* b, uint8_t size, bool latched) {
+  if (latched && strlen(b) + 8 < size) strcat(b, " BLOQUE");
+}
+
 void messageText(char* b, uint8_t size, const DisplayData& d) {
-  if (d.phase == HeaterPhase::Fault) {
-    copyText(b, size, heaterFaultName(d.faults));
-    if (d.faults & HEATER_FAULT_LATCHED) {
-      const uint8_t n = (uint8_t)strlen(b);
-      if (n + 8 < size) strcat(b, " BLOQUE");
-    }
-  } else if (!d.supplyOk) {
+  const uint8_t pf = d.s.pumpFaults;
+  if (d.s.phase == HeaterPhase::Fault) {
+    copyText(b, size, heaterFaultName(d.s.heaterFaults));
+    appendLatched(b, size, d.s.heaterFaults & HEATER_FAULT_LATCHED);
+  } else if (pf & (PUMP_FAULT_SATURATED | PUMP_FAULT_LATCHED)) {
+    copyText(b, size, "POMPE EN BUTEE");
+    appendLatched(b, size, pf & PUMP_FAULT_LATCHED);
+  } else if (pf & PUMP_FAULT_ZERO) {
+    copyText(b, size, "ZERO IP HORS TOL.");
+  } else if (!d.s.supplyOk) {
     copyText(b, size, "BATTERIE HORS PLAGE");
   } else if (d.outputForced) {
     copyText(b, size, "SORTIE IMPOSEE");
   } else if (d.simulation) {
     copyText(b, size, "SIMULATION SANS SONDE");
-  } else if (d.valid) {
+  } else if (d.s.valid) {
     copyText(b, size, "MESURE OK");
+  } else if (d.s.pumpActive) {
+    copyText(b, size, "ACCROCHAGE POMPE");
   } else {
     copyText(b, size, "CHAUFFE DE LA SONDE");
   }
@@ -118,8 +127,8 @@ uint16_t g_headerColor = 1;  // valeur impossible : premier tracé forcé
 char g_header[28] = "";
 
 uint16_t stateColor(const DisplayData& d) {
-  if (d.phase == HeaterPhase::Fault) return ST77XX_RED;
-  return d.valid ? ST77XX_GREEN : ST77XX_ORANGE;
+  if (d.s.phase == HeaterPhase::Fault || (d.s.pumpFaults & PUMP_FAULT_LATCHED)) return ST77XX_RED;
+  return d.s.valid ? ST77XX_GREEN : ST77XX_ORANGE;
 }
 
 void printAt(int16_t x, int16_t y, uint8_t size, uint16_t fg, uint16_t bg, const char* text) {
@@ -156,7 +165,7 @@ void displayUpdate(const DisplayData& d) {
   char v2[8];
 
   // Bandeau : phase de chauffe, redessiné seulement s'il change.
-  snprintf(b, sizeof b, "%-15s%10s", heaterPhaseName(d.phase), d.simulation ? "SIMULATION" : "LSU ADV");
+  snprintf(b, sizeof b, "%-15s%10s", heaterPhaseName(d.s.phase), d.simulation ? "SIMULATION" : "LSU ADV");
   if (c != g_headerColor || strcmp(b, g_header) != 0) {
     tft.fillRect(0, 0, 160, 11, c);
     printAt(2, 2, 1, ST77XX_BLACK, c, b);
@@ -166,13 +175,13 @@ void displayUpdate(const DisplayData& d) {
 
   // Lambda en grand (3 décimales), puis AFR.
   lambdaText(b, sizeof b, d);
-  printAt(4, 23, 4, d.valid ? ST77XX_WHITE : kGrey, ST77XX_BLACK, b);
+  printAt(4, 23, 4, d.s.valid ? ST77XX_WHITE : kGrey, ST77XX_BLACK, b);
   afrText(v1, sizeof v1, d);
   snprintf(b, sizeof b, "AFR %s", v1);
-  printAt(4, 60, 2, d.valid ? ST77XX_WHITE : kGrey, ST77XX_BLACK, b);
+  printAt(4, 60, 2, d.s.valid ? ST77XX_WHITE : kGrey, ST77XX_BLACK, b);
 
   // Barre de richesse : riche à gauche, pauvre à droite, repère à lambda 1.
-  const bool onBar = d.valid && d.range == lsu::Range::InTable;
+  const bool onBar = d.s.valid && d.s.range == lsu::Range::InTable;
   const int16_t x = onBar ? barX(d.lambda) : -1;
   if (x != g_markerX || c != g_markerColor) {
     if (g_markerX >= 0) tft.fillRect(g_markerX - 1, kBarY + 1, 3, kBarH - 2, ST77XX_BLACK);
@@ -182,16 +191,16 @@ void displayUpdate(const DisplayData& d) {
     g_markerColor = c;
   }
 
-  // Résistance interne, tension de chauffe, batterie, sortie.
-  riText(v1, sizeof v1, d.ri_Ohm);
-  formatFixed(v2, sizeof v2, d.heater_V, 1, 4);
+  // Résistance interne, tension de chauffe, courant de pompe, sortie.
+  riText(v1, sizeof v1, d.s.esr_Ohm);
+  formatFixed(v2, sizeof v2, d.s.heater_V, 1, 4);
   snprintf(b, sizeof b, "Ri%s ohm Chauffe %sV", v1, v2);
   padRight(b, sizeof b, kLineChars);
   printAt(4, 94, 1, ST77XX_WHITE, ST77XX_BLACK, b);
 
-  formatFixed(v1, sizeof v1, d.ubat_V, 1, 4);
+  formatFixed(v1, sizeof v1, d.s.pumpMeasured_mA, 3, 6);
   formatFixed(v2, sizeof v2, d.out_V, 2, 4);
-  snprintf(b, sizeof b, "Bat %sV Speeduino %sV", v1, v2);
+  snprintf(b, sizeof b, "Ip%smA Sortie %sV", v1, v2);
   padRight(b, sizeof b, kLineChars);
   printAt(4, 104, 1, ST77XX_WHITE, ST77XX_BLACK, b);
 
@@ -227,7 +236,7 @@ void displayUpdate(const DisplayData& d) {
 
   oled.setTextSize(1);
   oled.setCursor(0, 0);
-  oled.print(heaterPhaseName(d.phase));
+  oled.print(heaterPhaseName(d.s.phase));
   if (d.simulation) {
     oled.setCursor(110, 0);
     oled.print("SIM");
@@ -249,13 +258,13 @@ void displayUpdate(const DisplayData& d) {
   oled.drawRect(0, 37, 128, 7, SSD1306_WHITE);
   const int16_t x1 = 2 + (int16_t)(barFraction(1.0f) * 123.0f + 0.5f);
   oled.drawFastVLine(x1, 35, 11, SSD1306_WHITE);
-  if (d.valid && d.range == lsu::Range::InTable) {
+  if (d.s.valid && d.s.range == lsu::Range::InTable) {
     const int16_t x = 2 + (int16_t)(barFraction(d.lambda) * 123.0f + 0.5f);
     oled.fillRect(x - 1, 38, 3, 5, SSD1306_WHITE);
   }
 
-  riText(v1, sizeof v1, d.ri_Ohm);
-  formatFixed(v2, sizeof v2, d.heater_V, 1, 4);
+  riText(v1, sizeof v1, d.s.esr_Ohm);
+  formatFixed(v2, sizeof v2, d.s.heater_V, 1, 4);
   snprintf(b, sizeof b, "Ri%s Uh%sV", v1, v2);
   oled.setCursor(0, 47);
   oled.print(b);
@@ -344,12 +353,14 @@ void displayUpdate(const DisplayData& d) {
   padRight(b, sizeof b, 16);
   lcdRow(0, b);
   // Ligne 2 : « Ri  301 Uh 7.6V » en mesure, sinon la phase de chauffe.
-  riText(v1, sizeof v1, d.ri_Ohm);
-  if (d.valid && !d.simulation) {
-    formatFixed(v2, sizeof v2, d.heater_V, 1, 4);
+  riText(v1, sizeof v1, d.s.esr_Ohm);
+  if (d.s.valid && !d.simulation) {
+    formatFixed(v2, sizeof v2, d.s.heater_V, 1, 4);
     snprintf(b, sizeof b, "Ri%s Uh%sV", v1, v2);
+  } else if (d.s.pumpFaults != PUMP_FAULT_NONE) {
+    snprintf(b, sizeof b, "POMPE  Ri%s", v1);
   } else {
-    snprintf(b, sizeof b, "%-7sRi%s", d.valid ? "SIMUL" : heaterPhaseShort(d.phase), v1);
+    snprintf(b, sizeof b, "%-7sRi%s", d.s.valid ? "SIMUL" : heaterPhaseShort(d.s.phase), v1);
   }
   padRight(b, sizeof b, 16);
   lcdRow(1, b);
