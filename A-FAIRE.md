@@ -20,7 +20,7 @@ Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (jo
   - [ ] **Signal côté sonde**, moteur chaud, prise rebranchée : tension entre le fil signal et sa masse. Attendu : elle bouge entre ~0,1 et ~0,9 V ; si le mélange est riche, elle reste haute (~0,8–0,9 V), ce qui est déjà une information.
   - [ ] **Signal sur la carte** : même mesure sur la broche O2 de la Speeduino. Bon côté sonde et mauvais sur la carte = câblage. Bon aux deux = réglage TunerStudio (`egoType`, aujourd'hui Disabled, voir `cartographies/README.md`).
   - [ ] Ensuite seulement : choisir entre sonde étroite (réglage limité : riche ou pauvre) et large bande avec boîtier (Bosch LSU 4.9 en premier ; [wiki Speeduino O2](https://wiki.speeduino.com/en/configuration/O2) : « fortement recommandée » pour régler).
-  - Pièce de secours : ancienne sonde Denso **065500-2730** (marquage « NS6 … 01E28 »), 4 broches, d'aspect proche de la Denso DOX-1459 (selon le propriétaire, fiche non vérifiée). État inconnu, à ne tester que si la sonde neuve est en cause.
+  - Pièce de secours : ancienne sonde Denso **065500-2730** (marquage « NS6 … 01E28 »), 4 broches, d'aspect proche de la Denso DOX-1459 (selon le propriétaire). DOX-1459 d'après les revendeurs : sonde étroite chauffée « finger-type », M18×1,5, Honda 1990–2005 (OE cités : 36531-P1H-E01, 36531-P28-A01…) ; absente de la liste Denso pour le D16Y3 (DOX-1409 / 0109 / 0125). Même technologie que la sonde neuve : n'apporte rien de plus. État inconnu, à ne tester que si la sonde neuve est en cause.
 - [ ] **Calage réel au stroboscope** : la pince ne marche pas sur les bobines crayon. Trouver une autre prise de signal.
 - [ ] **Capteur MAP** figé à 25 kPa.
 - [ ] **Tables VE et avance** : l'axe s'arrête à 25 % de papillon.
