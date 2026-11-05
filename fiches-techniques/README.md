@@ -9,12 +9,13 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 
 | Pièce | Référence |
 |---|---|
-| Moteur | Honda D16Y3, compressions 9,5 bar, uniformes |
+| Véhicule | Châssis Civic **EJ9** (habitacle et faisceau intérieur d'origine EJ9, pas encore raccordés au faisceau moteur) ; usage visé : quotidien ; carburant **SP98** (propriétaire, 5/11/2026) |
+| Moteur | Honda D16Y3 (code lu sur le bloc), provenant d'une autre voiture, probablement une EJ6 (non certain). **N'a jamais tourné avant ce montage** : état interne inconnu. Calculateur Honda d'origine de ce moteur : absent. Compressions 9 à 9,5 bar, uniformes |
 | Calculateur | Speeduino, carte v0.4, firmware 202402 |
 | Logiciel | TunerStudio MS Lite 3.2.03 |
 | Allumage | Kit Honed Developments D & B Series (HDP40), capteurs Hall de came Honda série K |
 | Bobines | NGK U5014, marquage `105N R06 02 S 003 00 0025354724`, étincelle unique |
-| Injecteurs | Honda d’origine D16Y3 : ensemble **06164-P06-A02** (identification catalogue). 240 cc/min : donnée du projet, pression de référence non documentée |
+| Injecteurs | Honda d’origine D16Y3 : ensemble **06164-P06-A02** (identification catalogue). Marquage lu : « Keihin », fabriqué au Japon, plus 4 chiffres différents sur chaque injecteur (série ou lot, pas une référence). 240 cc/min : donnée du projet, pression de référence non documentée |
 | Régulateur de pression d'essence | AEM 25-304BK, réglable. Vis de réglage non touchée depuis la réception (indiqué par le propriétaire le 3 novembre 2026) : réglage d'usine 40 psi (notice p. 4), **pas encore mesuré** sur la voiture |
 | Capteur MAP | Denso 079800-3000, 5 V, marquage PS-30 (celui de la voiture, relié à l'admission) |
 | Sonde d’eau ECU | **37870-PJ7-003**, TW5 Matsushita — référence du montage d’origine D16Y3 |
@@ -22,6 +23,8 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Corps de papillon / TPS | **16400-P1G-E01** (GRS3A), retenu sur correspondance visuelle signalée par le propriétaire le 3 novembre 2026 ; TPS non référencé séparément |
 | Sonde lambda | Sonde étroite actuellement indiquée ; remplacement futur traité à part dans la section « Lambda — évolution ultérieure » |
 | Ralenti | Pas de vanne de ralenti pilotée par la carte |
+| Pompe à essence | Neuve, achetée sur Autodoc d'après le numéro de châssis, caractéristiques d'origine |
+| Faisceau moteur | Neuf, fait par le propriétaire ; bobines reliées directement au Speeduino, plus de distributeur |
 
 ## Documents
 
