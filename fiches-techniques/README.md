@@ -171,3 +171,56 @@ Le [catalogue officiel Denso 2024, page imprimée 66](https://assets.denso-am.eu
 | 07/1995–06/1996, M (manuelle) | DOX-1409 | DOX-0109 |
 
 Les périodes se chevauchent : conserver les conditions de boîte et vérifier le connecteur/nombre de fils pour choisir la variante. Ce tableau prouve plusieurs possibilités et ne constitue pas une correspondance univoque de chaque numéro Honda ci-dessus.
+
+## Recherche du 5 novembre 2026 — données pour la prochaine carto
+
+Hôtes non joignables depuis la session cloud : wiki.speeduino.com, speeduino.com, efianalytics.com, manuals.autorepairshq.com, hondabook.ru. Les pages du wiki ont été lues dans leur source GitHub (`speeduino/wiki.js`). « Résumé de recherche » = valeur vue dans un moteur de recherche, page non ouverte.
+
+### Allumage (dwell)
+
+| Donnée | Valeur | Source | Fiabilité |
+|---|---|---|---|
+| Tension nominale des dwells Speeduino | 12 V ; courbe de correction à 100 % à 12 V | [wiki *Dwell*](https://github.com/speeduino/wiki.js/blob/master/configuration/Dwell.md) | officiel |
+| Protection de sur-dwell | au moins 3 ms au-dessus des dwells nominaux | même page | officiel |
+| Bobines « R8 » (famille VAG 06E905115) | ≈1,6 ms à 14 V ≈ 8 A ; ≈2,5 ms ≈ 16 A = saturées | [HP Academy](https://www.hpacademy.com/forum/general-tuning-discussion/show/audi-r8-ignition-coil-dwell-settings) | forum |
+| Cible déduite pour Speeduino | ≈1,9 ms à 12 V (1,6 × 14 ÷ 12, calcul) | — | calcul |
+
+### Ralenti
+
+| Donnée | Valeur | Source | Fiabilité |
+|---|---|---|---|
+| Électrovanne Civic 1996-2000 | Honda **36450-P2J-J01** | [hondapartsconnection](https://www.hondapartsconnection.com/oem-parts/honda-1996-2000-honda-valve-assembly-electronic-air-control-36450p2jj01) | catalogue revendeur |
+| Fréquence d'origine, résistance, sens | **non trouvés** | — | — |
+| Mode conseillé | Open+Closed loop pour un nouveau montage ; régler d'abord la courbe en boucle ouverte, gains PID à 0 | [wiki *Idle*](https://github.com/speeduino/wiki.js/blob/master/configuration/Idle.md) | officiel |
+| Vanne à 0 % | certaines restent entrouvertes, se ferment puis se rouvrent quand le % monte : à tester | même page | officiel |
+
+### Injection et essence
+
+| Donnée | Valeur | Source | Fiabilité |
+|---|---|---|---|
+| Injecteurs D16Y3 (référence, débit, temps d'ouverture) | **non trouvés** | — | — |
+| Injecteur Keihin 06164-P8A-A00 (D16Y8, autre moteur) | 11,7 Ω ; 300 cc/min à 3 bar | annonce revendeur (URL non retenue) | revendeur, autre moteur |
+| Pression d'essence D16Y5-Y8 (pas Y3) | 265-314 kPa dépression débranchée ; ≈196-245 kPa branchée | [manualslib, manuel Civic p. 502](https://www.manualslib.com/manual/464698/Honda-Civic.html?page=502) | manuel Honda, résumé de recherche |
+
+### Sondes
+
+| Donnée | Valeur | Source | Fiabilité |
+|---|---|---|---|
+| Préréglage Honda dans TunerStudio | **aucun** (GM, Chrysler, Ford, Saab, Mazda, Mitsu, Toyota, RX-7, VW, BMW) | `speeduino.ini` 202402, l. 5733-5765 | code officiel |
+| Méthode | 3 points mesurés (résistance à 3 températures) dans « Calibrate Thermistor Tables » | même fichier | code officiel |
+| Courbes 37870-PJ7-003 et 37880-P05-A00 | **non trouvées** | — | — |
+| MAP Denso 079800 (préréglage) | 0-173 kPa | `speeduino.ini` 202402, l. 3169 | code officiel, sans suffixe -3000 |
+| MAP 079800-3000 | 0,40 V à 10 kPa ; 4,77 V à 170 kPa (≈2,9 V à 101 kPa par calcul) | [Speed Science NZ](https://www.speedscience.co.nz/collections/all-products/products/honda-oem-knock-sensor-b-dh-series) | revendeur, page non ouverte |
+
+### Moteur
+
+| Donnée | Valeur | Source | Fiabilité |
+|---|---|---|---|
+| Alésage × course | 75 × 90 mm, 1 590 cm³ | [drifted.com](https://www.drifted.com/d16-engine/) | blog |
+| Taux de compression D16Y3 | 9,4:1 | [dailydriven.ro](https://dailydriven.ro/fr/sur-le-moteur-d16-de-honda-1579807) | blog |
+| Compressions D16Y3 (nominal, minimum, écart) | **non trouvées** ; pour mémoire D16 VTEC Del Sol 1996 : 1 700 kPa nominal, 950 kPa minimum | autorepairshq, résumé de recherche | autre moteur |
+| Ordre d'allumage, calage de base, régime de ralenti | **non trouvés** en source ouverte | — | — |
+
+### TunerStudio
+
+- **VE Analyze Live** (réglage automatique de la VE) : réservé à la version enregistrée (79,95 $ affichés), pas dans MS Lite. [efianalytics](https://www.efianalytics.com/register/viewProduct.jsp?productCode=TunerStudioMS), résumé de recherche.
