@@ -10,7 +10,7 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Pièce | Référence |
 |---|---|
 | Véhicule | Châssis Civic **EJ9** (habitacle et faisceau intérieur d'origine EJ9, pas encore raccordés au faisceau moteur) ; usage visé : quotidien ; carburant **SP98** (propriétaire, 5/11/2026) |
-| Moteur | Honda D16Y3 (code lu sur le bloc), provenant d'une autre voiture, probablement une EJ6 (non certain). **N'a jamais tourné avant ce montage** : état interne inconnu. Calculateur Honda d'origine de ce moteur : absent. Compressions 9 à 9,5 bar, uniformes |
+| Moteur | Honda D16Y3 (code lu sur le bloc), provenant d'une autre voiture, probablement une EJ6 (non certain). **Refait entièrement par le propriétaire** : démonté, inspecté, jeux aux soupapes réglés, distribution recalée et revérifiée début novembre 2026 (propriétaire, 5/11). Pas de calculateur ni d'essai moteur avant ce montage. Calculateur Honda d'origine de ce moteur : absent. Compressions 9 à 9,5 bar, uniformes |
 | Calculateur | Speeduino, carte v0.4, firmware 202402 |
 | Logiciel | TunerStudio MS Lite 3.2.03 |
 | Allumage | Kit Honed Developments D & B Series (HDP40), capteurs Hall de came Honda série K |
