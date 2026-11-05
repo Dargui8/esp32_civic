@@ -1,6 +1,18 @@
 # À faire — D16Y3 / Speeduino
 
-Dernière mise à jour : 5 novembre 2026 (mesures lambda ajoutées). Le détail et les sources sont dans `cartographies/README.md`.
+Dernière mise à jour : 5 novembre 2026 (mesures à prendre avant la prochaine carto). Le détail et les sources sont dans `cartographies/README.md` et `fiches-techniques/README.md` (§ « Recherche du 5 novembre 2026 »).
+
+## 0. Mesures à prendre au prochain passage, avant la carto « tout en un »
+
+Ce qu'aucune source publique n'a donné ; une mesure au multimètre le remplace.
+
+- [ ] **Injecteurs** : résistance d'un injecteur (Ω) et marquage gravé dessus (photo).
+- [ ] **Électrovanne de ralenti** : résistance entre ses 2 fils (Ω) et marquage (référence attendue 36450-P2J-J01) ; câblage, voir § 1.
+- [ ] **Sonde d'eau et sonde d'air** : résistance à 3 températures (eau glacée 0 °C, ambiante avec thermomètre, eau chaude 80-90 °C avec thermomètre). Speeduino n'a pas de préréglage Honda : ces 3 points servent à le calibrer.
+- [ ] **MAP** : tension sur la broche A3 de l'Arduino, moteur arrêté puis au ralenti (§ 2).
+- [ ] **Lambda** : les 4 mesures (§ 2).
+- [ ] **Batterie** : chargée, puis tension à l'arrêt, au démarreur, moteur à ~2 000 tr/min.
+- [ ] **Compressions** : confirmer l'unité de la mesure (bar ?) et les conditions (moteur chaud ? papillon ouvert ? batterie chargée ?). Valeur nominale D16Y3 non trouvée ; pour un autre D16 (VTEC), 1 700 kPa nominal et 950 kPa minimum.
 
 ## 1. Électrovanne de ralenti (en premier)
 
