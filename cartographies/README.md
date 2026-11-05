@@ -6,6 +6,7 @@
 | `2026-11-03-test-demarrage.msq` | Carto de test du 3 novembre 2026 : démarrage, ralenti et calage, **au garage**. Ne pas rouler avec. |
 | `2026-11-04-test-2-moins-riche.msq` | Carto de test 2 du 4 novembre 2026 : la même, **VE × 0,85 sauf la colonne 500 tr/min** (le lancement ne change pas). Motif : essence dans l'échappement après l'essai de 16 h 02, sans lambda pour mesurer. Au ralenti après l'enrichissement de démarrage : 8,5 ms au lieu de 9,7. Ne pas rouler avec. |
 | `2026-11-04-test-3-avance-table.msq` | Carto de test 3 du 4 novembre 2026 : la carto 2 avec **Fixed Angle sur Off** (avance de la table : environ 17° au ralenti, au lieu de 10° fixes) et **seuil de lancement (`crankRPM`) à 300 tr/min** au lieu de 400. Motif : journal de 19 h 29. Ne pas rouler avec. |
+| `2026-11-05-test-4-tout-en-un.msq` | Carto de test 4 du 5 novembre 2026 : la carto 3 avec **dwell réduit**, **ralenti en PWM Open loop** et **axes des tables jusqu'à 100 % de papillon**. Détail ci-dessous (« Carto 4 »). À charger seulement après la vérification au multimètre de l'électrovanne (`A-FAIRE.md` § 1). Ne pas rouler avec. |
 
 ## Ce que change la carto de test
 
@@ -61,6 +62,29 @@ Une fois chaud, rien ne change. Au lancement et pendant la mise en température,
 | Démarre, puis cale | Noter la seconde ; on regarde le journal ensemble |
 | Ne démarre pas, odeur d'essence, bougies mouillées | Trop riche : on redescend la VE |
 | Ne démarre pas, bougies sèches | Manque d'essence ou d'étincelle : à chercher ailleurs |
+
+## Carto 4 (5 novembre 2026) : ce qui change par rapport à la carto 3
+
+| Réglage | Carto 3 | Carto 4 | Pourquoi | Source |
+|---|---|---|---|---|
+| Dwell en marche (`dwellrun`) | 2,5 ms | **1,8 ms** | 2,5 ms = saturation des bobines de la famille R8 (≈16 A) ; ≈1,6 ms à 14 V suffisent (≈8 A). La correction du tune est à 100 % jusqu'à 14,8 V : 1,8 ms garde une marge | [HP Academy](https://www.hpacademy.com/forum/general-tuning-discussion/show/audi-r8-ignition-coil-dwell-settings) (forum) ; [wiki *Dwell*](https://github.com/speeduino/wiki.js/blob/master/configuration/Dwell.md) |
+| Dwell au démarreur (`dwellcrank`) | 4,5 ms | **2,5 ms** | 4,5 ms dépasse la saturation ; au démarreur la tension est plus basse, le courant monte moins vite (hypothèse, à confirmer à la pince) | mêmes sources |
+| Ralenti (`iacAlgorithm`) | None | **PWM Open loop** | Pédale relâchée, le moteur cale une fois chaud faute d'air (journal du 4/11, 19 h 54). Courbes déjà présentes : 160 Hz, sens Normal | [wiki *Idle*](https://github.com/speeduino/wiki.js/blob/master/configuration/Idle.md) |
+| Axe de la table VE (`fuelLoadBins`) | 0 → 25 % | **0, 1, 2, 3, 4, 5, 7, 10, 13, 17, 21, 25, 35, 50, 70, 100 %** | Au-delà de 25 %, le calculateur prenait déjà la ligne de 25 % : les lignes 35-100 % la recopient (même comportement), mais deviennent réglables | — |
+| Axe de la table d'avance (`mapBins1`) | 2,5 → 25 % | **0, 2,5, 4, 5, 6,5, 7,5, 10, 12,5, 15, 18,5, 22, 25, 35, 50, 70, 100 %** | Idem ; lignes 35, 50, 70 et 100 % = ligne de 25 % **moins 2, 4, 5 et 6°** | choix de prudence, pas une règle : pas de mesure de cliquetis |
+
+- Les valeurs sous 25 % sont **recalculées par interpolation** de l'ancienne table, comme le fait le calculateur entre deux cases : écart d'au plus 1 à 2 points sur les cases supprimées (11,5 %, 16,5 %, 19 %…).
+- Rien d'autre ne change (comparaison des deux fichiers : dwell, ralenti, deux tables et leurs axes).
+- Généré par script depuis la carto 3 ; encodage ISO-8859-1 et fins de ligne identiques aux cartos précédentes.
+
+### Protocole propre à la carto 4
+
+1. **Avant de la charger** : multimètre sur l'électrovanne (IDC 37 et 12 V contact mis, `A-FAIRE.md` § 1). Si IDC 37 va ailleurs, ne pas charger : le PWM piloterait autre chose.
+2. Même ordre de démarrage que d'habitude (USB débranché, pompe, contact, USB).
+3. **Ralenti chaud, pédale relâchée** : le régime doit monter par rapport à la carto 3. S'il baisse, passer le sens de la vanne (`iacPWMdir`, Idle Control) de Normal à **Reverse**.
+4. Ajuster la courbe « Idle - PWM Duty Cycle » à la température du moment pour viser ~800-900 tr/min chaud (valeur de départ, à affiner).
+5. **Calage au stroboscope** avec une rallonge de bougie (voir `A-FAIRE.md`), Fixed Angle à 10° le temps de la lecture, puis Off.
+6. Ne pas ouvrir en grand au-delà de 25 % de papillon sans lambda : les lignes hautes ne sont pas réglées.
 
 ## Résultats des essais
 

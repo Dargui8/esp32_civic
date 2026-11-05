@@ -20,7 +20,7 @@ Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (jo
 
 - [ ] **Multimètre** sur les 2 fils de l'électrovanne, prise débranchée : continuité vers la broche 37 du connecteur IDC (Idle 1) ? Tension 12 V sur l'autre fil, contact mis ?
 - [ ] Si le fil n'arrive pas sur IDC 37 : le raccorder (montage à confirmer sur le schéma de la carte v0.4).
-- [ ] Carto avec le ralenti en **PWM Open loop** (courbes déjà remplies dans le tune) : au ralenti, le régime doit monter. S'il baisse, mettre le sens sur Reverse.
+- [ ] Carto avec le ralenti en **PWM Open loop** (prête : `cartographies/2026-11-05-test-4-tout-en-un.msq`) (courbes déjà remplies dans le tune) : au ralenti, le régime doit monter. S'il baisse, mettre le sens sur Reverse.
 - [ ] Trouver la fréquence qui convient à la vanne Honda (160 Hz dans le tune actuel).
 
 ## 2. Ensuite
@@ -33,7 +33,7 @@ Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (jo
   - [ ] **Signal sur la carte** : même mesure sur la broche O2 de la Speeduino. Bon côté sonde et mauvais sur la carte = câblage. Bon aux deux = réglage TunerStudio (`egoType`, aujourd'hui Disabled, voir `cartographies/README.md`).
   - [ ] Ensuite seulement : choisir entre sonde étroite (réglage limité : riche ou pauvre) et large bande avec boîtier (Bosch LSU 4.9 en premier ; [wiki Speeduino O2](https://wiki.speeduino.com/en/configuration/O2) : « fortement recommandée » pour régler).
   - Pièce de secours : ancienne sonde Denso **065500-2730** (marquage « NS6 … 01E28 »), 4 broches, d'aspect proche de la Denso DOX-1459 (selon le propriétaire). DOX-1459 d'après les revendeurs : sonde étroite chauffée « finger-type », M18×1,5, Honda 1990–2005 (OE cités : 36531-P1H-E01, 36531-P28-A01…) ; absente de la liste Denso pour le D16Y3 (DOX-1409 / 0109 / 0125). Même technologie que la sonde neuve : n'apporte rien de plus. État inconnu, à ne tester que si la sonde neuve est en cause.
-- [ ] **Calage réel au stroboscope** : la pince ne marche pas sur les bobines crayon. Trouver une autre prise de signal.
+- [ ] **Calage réel au stroboscope** : la pince ne marche pas sur les bobines crayon. Méthode la plus citée : une **rallonge haute tension** entre la bobine du cylindre 1 et sa bougie (bobine posée à côté, sortie du puits de bougie), la pince sur la rallonge. Rallonge « COP extension lead » du commerce ou faite avec un fil de bougie. Sources : forums [Link ECU](https://forums.linkecu.com/topic/24252-cop-timing-light), [HP Academy](https://www.hpacademy.com/forum/general-tuning-discussion/show/timing-light-on-cop-effected-by-dwell). Éviter de pincer les fils basse tension de la bobine (lecture peu fiable selon ces fils).
 - [ ] **Capteur MAP** figé à 25-26 kPa, alors que les tensions au capteur ont été vérifiées (propriétaire, 5/11). Avec la calibration du tune (0-174 kPa), 26 kPa = 0,75 V vus par le calculateur. Mesurer moteur arrêté, contact mis, **directement sur la broche A3 de l'Arduino Mega** (entrée MAP de la carte v0.4, `init.cpp` 202402) : ~2,9 V = problème de lecture ou de réglage ; ~0,75 V = le signal se perd entre le connecteur et l'Arduino.
 - [ ] **Température d'air** : jamais vérifiée. Résistance de la sonde à température connue, et comparer avec la valeur lue dans TunerStudio.
 - [ ] **Batterie** : la charger, puis noter la tension moteur arrêté, au démarreur et moteur tournant à ~2 000 tr/min (charge de l'alternateur).
