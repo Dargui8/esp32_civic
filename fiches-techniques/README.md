@@ -15,7 +15,7 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Logiciel | TunerStudio MS Lite 3.2.03 |
 | Allumage | Kit Honed Developments D & B Series (HDP40), capteurs Hall de came Honda série K |
 | Bobines | NGK U5014, marquage `105N R06 02 S 003 00 0025354724`, étincelle unique |
-| Injecteurs | Honda d’origine D16Y3 : ensemble **06164-P06-A02** (identification catalogue). Marquage lu : « Keihin », fabriqué au Japon, plus 4 chiffres différents sur chaque injecteur (série ou lot, pas une référence). 240 cc/min : donnée du projet, pression de référence non documentée |
+| Injecteurs | Honda d’origine D16Y3 : ensemble **06164-P06-A02** (identification catalogue). Marquage lu : « Keihin », fabriqué au Japon, plus 4 chiffres différents sur chaque injecteur (série ou lot, pas une référence). **Résistance mesurée : 12 Ω** (propriétaire, 15/11/2026) = injecteurs haute impédance, pilotables directement par la carte v0.4. 240 cc/min : donnée du projet, pression de référence non documentée |
 | Régulateur de pression d'essence | AEM 25-304BK, réglable. Vis de réglage non touchée depuis la réception (indiqué par le propriétaire le 3 novembre 2026) : réglage d'usine 40 psi (notice p. 4), **pas encore mesuré** sur la voiture |
 | Capteur MAP | Denso 079800-3000, 5 V, marquage PS-30 (celui de la voiture, relié à l'admission) |
 | Sonde d’eau ECU | **37870-PJ7-003**, TW5 Matsushita — référence du montage d’origine D16Y3 |
