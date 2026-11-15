@@ -18,8 +18,9 @@ Ce qu'aucune source publique n'a donné ; une mesure au multimètre le remplace.
 
 Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (journal du 4/11, 19 h 54). La vanne à eau se ferme en chauffant ; l'électrovanne n'est pas pilotée (`iacAlgorithm = None`).
 
-- [ ] **Multimètre** sur les 2 fils de l'électrovanne, prise débranchée : continuité vers la broche 37 du connecteur IDC (Idle 1) ? Tension 12 V sur l'autre fil, contact mis ?
-- [ ] Si le fil n'arrive pas sur IDC 37 : le raccorder (montage à confirmer sur le schéma de la carte v0.4).
+- [x] Vanne testée en 12 V direct : elle clique, elle n'est pas grippée (propriétaire, 15/11).
+- [x] Un fil raccordé à la broche **IDC 37** (Idle 1) (propriétaire, 15/11).
+- [ ] Confirmer que l'**autre fil** reçoit le 12 V **après contact** (pas un 12 V permanent).
 - [ ] Carto avec le ralenti en **PWM Open loop** (prête : `cartographies/2026-11-05-test-4-tout-en-un.msq`) (courbes déjà remplies dans le tune) : au ralenti, le régime doit monter. S'il baisse, mettre le sens sur Reverse.
 - [ ] Trouver la fréquence qui convient à la vanne Honda (160 Hz dans le tune actuel).
 
