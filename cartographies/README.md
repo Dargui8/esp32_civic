@@ -7,6 +7,7 @@
 | `2026-11-04-test-2-moins-riche.msq` | Carto de test 2 du 4 novembre 2026 : la même, **VE × 0,85 sauf la colonne 500 tr/min** (le lancement ne change pas). Motif : essence dans l'échappement après l'essai de 16 h 02, sans lambda pour mesurer. Au ralenti après l'enrichissement de démarrage : 8,5 ms au lieu de 9,7. Ne pas rouler avec. |
 | `2026-11-04-test-3-avance-table.msq` | Carto de test 3 du 4 novembre 2026 : la carto 2 avec **Fixed Angle sur Off** (avance de la table : environ 17° au ralenti, au lieu de 10° fixes) et **seuil de lancement (`crankRPM`) à 300 tr/min** au lieu de 400. Motif : journal de 19 h 29. Ne pas rouler avec. |
 | `2026-11-05-test-4-tout-en-un.msq` | Carto de test 4 du 5 novembre 2026 : la carto 3 avec **dwell réduit**, **ralenti en PWM Open loop** et **axes des tables jusqu'à 100 % de papillon**. Détail ci-dessous (« Carto 4 »). À charger seulement après la vérification au multimètre de l'électrovanne (`A-FAIRE.md` § 1). Ne pas rouler avec. |
+| `2026-11-15-test-5-ralenti-chaud.msq` | Carto de test 5 du 15 novembre 2026 : la carto 4 avec la **courbe de l'électrovanne abaissée** et le **creux d'avance lissé**. Détail ci-dessous (« Carto 5 »). Ne pas rouler avec. |
 
 ## Ce que change la carto de test
 
@@ -62,6 +63,24 @@ Une fois chaud, rien ne change. Au lancement et pendant la mise en température,
 | Démarre, puis cale | Noter la seconde ; on regarde le journal ensemble |
 | Ne démarre pas, odeur d'essence, bougies mouillées | Trop riche : on redescend la VE |
 | Ne démarre pas, bougies sèches | Manque d'essence ou d'étincelle : à chercher ailleurs |
+
+## Carto 5 (15 novembre 2026) : ce qui change par rapport à la carto 4
+
+| Réglage | Carto 4 | Carto 5 | Pourquoi | Source |
+|---|---|---|---|---|
+| Courbe « Idle - PWM Duty Cycle » (`iacOLPWMVal`), −26 / 2 / 22 / 39 / 53 / 66 / 79 / 94 / 107 / 117 °C | 65 / 59 / 51 / 48 / 45 / 44 / 41 / 40 / 38 / 38 % | **65 / 55 / 46 / 43 / 40 / 39 / 36 / 35 / 33 / 33 %** | Ralenti trop haut le 15/11 : 1 450-1 530 tr/min à froid, 1 210-1 300 à 35-39 °C. −4 points à 2 °C, −5 points à partir de 22 °C : premier pas, valeur de départ et non règle | journal du 15/11, 18 h 11 |
+| Avance, colonnes 500 / 1 000 / 1 500 tr/min, lignes 5 / 6,5 / 7,5 % de papillon | 14 / 14 / 14° | **17 / 18 / 20°, 16 / 18 / 20°, 16 / 19 / 21°** | Creux à 14° à chaque ouverture des gaz (journal du 15/11) ; valeurs interpolées entre la ligne 4 % et la ligne 10 % | journal du 15/11, 18 h 11 |
+
+- Rien d'autre ne change (comparaison des deux fichiers). Généré par script depuis la carto 4, même encodage et mêmes fins de ligne.
+
+### Protocole propre à la carto 5
+
+1. Charger, Burn, couper complètement le calculateur (USB débranché, 10 s), ordre de démarrage habituel, journal lancé.
+2. **Laisser tourner pédale relâchée jusqu'au déclenchement du ventilateur** (thermostat ouvert), en surveillant la température d'eau.
+3. **Si le ralenti descend sous ~700 tr/min ou cale** : remonter de 2-3 points la case de la courbe à la température du moment, Burn.
+4. **Si le ralenti chaud reste au-dessus de ~950 tr/min** : baisser encore de 2-3 points la case à la température du moment.
+5. Quelques coups de gaz comme le 15/11 (moins de 25 % de papillon).
+6. Envoyer le journal.
 
 ## Carto 4 (5 novembre 2026) : ce qui change par rapport à la carto 3
 

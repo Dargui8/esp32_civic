@@ -22,7 +22,7 @@ Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (jo
 - [x] Un fil raccordé à la broche **IDC 37** (Idle 1) (propriétaire, 15/11).
 - [ ] Confirmer que l'**autre fil** reçoit le 12 V **après contact** (pas un 12 V permanent).
 - [x] Carto 4 essayée le 15/11 (journal 18 h 11) : **le ralenti tient** jusqu'à 39 °C, sens Normal correct.
-- [ ] Ralenti trop haut (1 200-1 300 tr/min à 35-39 °C) : baisser la courbe « Idle - PWM Duty Cycle » par petits pas, et laisser chauffer jusqu'à ouverture du thermostat (ventilateur) pour régler le ralenti chaud.
+- [ ] Ralenti trop haut (1 200-1 300 tr/min à 35-39 °C) : **essayer la carto 5** (`cartographies/2026-11-15-test-5-ralenti-chaud.msq`, courbe −5 points, avance lissée) en laissant chauffer jusqu'au ventilateur.
 - [ ] Trouver la fréquence qui convient à la vanne Honda (160 Hz dans le tune actuel).
 
 ## 2. Ensuite
