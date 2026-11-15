@@ -1,6 +1,6 @@
 # À faire — D16Y3 / Speeduino
 
-Dernière mise à jour : 15 novembre 2026 (résistance des injecteurs). Le détail et les sources sont dans `cartographies/README.md` et `fiches-techniques/README.md` (§ « Recherche du 5 novembre 2026 »).
+Dernière mise à jour : 15 novembre 2026 (essai de la carto 4). Le détail et les sources sont dans `cartographies/README.md` et `fiches-techniques/README.md` (§ « Recherche du 5 novembre 2026 »).
 
 ## 0. Mesures à prendre au prochain passage, avant la carto « tout en un »
 
@@ -21,7 +21,8 @@ Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (jo
 - [x] Vanne testée en 12 V direct : elle clique, elle n'est pas grippée (propriétaire, 15/11).
 - [x] Un fil raccordé à la broche **IDC 37** (Idle 1) (propriétaire, 15/11).
 - [ ] Confirmer que l'**autre fil** reçoit le 12 V **après contact** (pas un 12 V permanent).
-- [ ] Carto avec le ralenti en **PWM Open loop** (prête : `cartographies/2026-11-05-test-4-tout-en-un.msq`) (courbes déjà remplies dans le tune) : au ralenti, le régime doit monter. S'il baisse, mettre le sens sur Reverse.
+- [x] Carto 4 essayée le 15/11 (journal 18 h 11) : **le ralenti tient** jusqu'à 39 °C, sens Normal correct.
+- [ ] Ralenti trop haut (1 200-1 300 tr/min à 35-39 °C) : baisser la courbe « Idle - PWM Duty Cycle » par petits pas, et laisser chauffer jusqu'à ouverture du thermostat (ventilateur) pour régler le ralenti chaud.
 - [ ] Trouver la fréquence qui convient à la vanne Honda (160 Hz dans le tune actuel).
 
 ## 2. Ensuite
