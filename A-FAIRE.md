@@ -24,6 +24,7 @@ Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (jo
 - [x] Carto 4 essayée le 15/11 (journal 18 h 11) : **le ralenti tient** jusqu'à 39 °C, sens Normal correct.
 - [x] Carto 5 essayée le 15/11 (19 h 24) : bien jusqu'à 45 °C, trop bas une fois chaud (≈650 tr/min, 2 calages).
 - [ ] **Essayer la carto 6** (`cartographies/2026-11-15-test-6-ralenti-chaud-plus.msq`, +3 points à partir de 53 °C), jusqu'au ventilateur.
+- [ ] **Ventilateur : ne démarre pas** (propriétaire, 15/11), alors que le Speeduino a commandé sa sortie à 834 s (eau lue 90 °C, réglage `fanSP` = 90 °C, hystérésis 5 °C). Vérifier où va la sortie ventilateur de la carte (relais ? faisceau EJ9 pas encore raccordé ?) et le thermocontact d'origine. **En attendant : essais courts, surveiller l'eau** (thermomètre infrarouge sur la durite haute ou le boîtier de thermostat, en plus de TunerStudio, la sonde n'étant pas calibrée pour Honda). Ce ventilateur n'explique pas les baisses de tension : il n'a pas tourné.
 - [ ] **Sauts de la température d'eau avec la tension** (journal du 15/11, 19 h 24) : contrôler les masses (moteur-caisse, batterie, Speeduino) et la masse capteurs de la sonde d'eau ; mesurer au multimètre la tension du signal de la sonde moteur chaud au ralenti, et voir si elle bouge quand la tension batterie bouge. À régler avant d'affiner le ralenti : la courbe de l'électrovanne suit la température lue.
 - [ ] Trouver la fréquence qui convient à la vanne Honda (160 Hz dans le tune actuel).
 
