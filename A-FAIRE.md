@@ -7,7 +7,7 @@ Dernière mise à jour : 15 novembre 2026 (résistance des injecteurs). Le déta
 Ce qu'aucune source publique n'a donné ; une mesure au multimètre le remplace.
 
 - [x] **Injecteurs** : 12 Ω (propriétaire, 15/11) = haute impédance ; pas de référence gravée, seulement « Keihin, Japon ».
-- [ ] **Électrovanne de ralenti** : résistance entre ses 2 fils (Ω) et marquage (référence attendue 36450-P2J-J01) ; câblage, voir § 1.
+- [x] **Électrovanne de ralenti** : 11,3 Ω entre ses 2 fils (propriétaire, 15/11), soit ≈1,2 A à 14 V. Reste : marquage (référence attendue 36450-P2J-J01) et câblage, voir § 1.
 - [ ] **Sonde d'eau et sonde d'air** : résistance à 3 températures (eau glacée 0 °C, ambiante avec thermomètre, eau chaude 80-90 °C avec thermomètre). Speeduino n'a pas de préréglage Honda : ces 3 points servent à le calibrer.
 - [ ] **MAP** : tension sur la broche A3 de l'Arduino, moteur arrêté puis au ralenti (§ 2).
 - [ ] **Lambda** : les 4 mesures (§ 2).

@@ -193,7 +193,8 @@ Hôtes non joignables depuis la session cloud : wiki.speeduino.com, speeduino.co
 | Donnée | Valeur | Source | Fiabilité |
 |---|---|---|---|
 | Électrovanne Civic 1996-2000 | Honda **36450-P2J-J01** | [hondapartsconnection](https://www.hondapartsconnection.com/oem-parts/honda-1996-2000-honda-valve-assembly-electronic-air-control-36450p2jj01) | catalogue revendeur |
-| Fréquence d'origine, résistance, sens | **non trouvés** | — | — |
+| Résistance mesurée | **11,3 Ω** (≈1,2 A à 14 V, calcul) | propriétaire, 15/11/2026 | mesure |
+| Fréquence d'origine, sens | **non trouvés** | — | — |
 | Mode conseillé | Open+Closed loop pour un nouveau montage ; régler d'abord la courbe en boucle ouverte, gains PID à 0 | [wiki *Idle*](https://github.com/speeduino/wiki.js/blob/master/configuration/Idle.md) | officiel |
 | Vanne à 0 % | certaines restent entrouvertes, se ferment puis se rouvrent quand le % monte : à tester | même page | officiel |
 
