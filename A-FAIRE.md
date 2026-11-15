@@ -22,7 +22,9 @@ Pourquoi : pédale relâchée, le moteur cale dès 37 °C d'eau, faute d'air (jo
 - [x] Un fil raccordé à la broche **IDC 37** (Idle 1) (propriétaire, 15/11).
 - [ ] Confirmer que l'**autre fil** reçoit le 12 V **après contact** (pas un 12 V permanent).
 - [x] Carto 4 essayée le 15/11 (journal 18 h 11) : **le ralenti tient** jusqu'à 39 °C, sens Normal correct.
-- [ ] Ralenti trop haut (1 200-1 300 tr/min à 35-39 °C) : **essayer la carto 5** (`cartographies/2026-11-15-test-5-ralenti-chaud.msq`, courbe −5 points, avance lissée) en laissant chauffer jusqu'au ventilateur.
+- [x] Carto 5 essayée le 15/11 (19 h 24) : bien jusqu'à 45 °C, trop bas une fois chaud (≈650 tr/min, 2 calages).
+- [ ] **Essayer la carto 6** (`cartographies/2026-11-15-test-6-ralenti-chaud-plus.msq`, +3 points à partir de 53 °C), jusqu'au ventilateur.
+- [ ] **Sauts de la température d'eau avec la tension** (journal du 15/11, 19 h 24) : contrôler les masses (moteur-caisse, batterie, Speeduino) et la masse capteurs de la sonde d'eau ; mesurer au multimètre la tension du signal de la sonde moteur chaud au ralenti, et voir si elle bouge quand la tension batterie bouge. À régler avant d'affiner le ralenti : la courbe de l'électrovanne suit la température lue.
 - [ ] Trouver la fréquence qui convient à la vanne Honda (160 Hz dans le tune actuel).
 
 ## 2. Ensuite
