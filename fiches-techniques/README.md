@@ -229,3 +229,18 @@ Hôtes non joignables depuis la session cloud : wiki.speeduino.com, speeduino.co
 ### TunerStudio
 
 - **VE Analyze Live** (réglage automatique de la VE) : réservé à la version enregistrée (79,95 $ affichés), pas dans MS Lite. [efianalytics](https://www.efianalytics.com/register/viewProduct.jsp?productCode=TunerStudioMS), résumé de recherche.
+
+## Schémas Honda fournis par le propriétaire (25/11/2026) — manuel d'atelier Civic, pages 23-112 à 23-115
+
+| Circuit | Ce que montre le schéma |
+|---|---|
+| Ventilateur de radiateur (23-112) | Relais dans la boîte sous le capot. **Bobine** : alimentée par le fusible **n° 17 (7,5 A)** de la boîte sous le tableau de bord (après contact), retour par le fil **GRN** vers le **thermocontact ECT, fermé au-dessus de 93 °C (199 °F)**, à la masse G101 ; le fil GRN part aussi vers l'ECM/PCM. **Moteur** : fusible n° 57 (20 A), fil BLK/RED, masse G201. → La sortie ventilateur du Speeduino se branche sur le **fil GRN** (elle met à la masse, comme le thermocontact). |
+| Compte-tours (23-114, 23-115) | Signal sur le fil **BLU** venant du **module d'allumage (ICM)**, borne C9 du combiné. « 100 tr/min pour 200 impulsions par minute » = **2 impulsions par tour** (une par étincelle sur un 4 cylindres). → Sortie TACHO-OUT du Speeduino sur ce fil BLU ; réglage `tachoDiv` = Normal attendu (une impulsion par allumage, à confirmer à l'essai). Si l'aiguille ne bouge pas : résistance de rappel au 12 V à essayer (hypothèse). |
+| Compteur de vitesse (23-114, 23-115) | Capteur VSS **à 3 fils** sur la boîte : BLK/YEL (alimentation), BLK (masse G101), BLU/WHT (signal) ; 60 km/h = 637 tr/min du VSS. |
+| Après contact | Fusibles **n° 15 et n° 25 (7,5 A)** (combiné) et **n° 17 (7,5 A)** (relais ventilateur), boîte sous le tableau de bord. |
+
+### Adaptateur du propriétaire (schéma KiCad J2 24 voies → J1 40 voies de la carte)
+
+- J1 reprend la numérotation de l'IDC : 11 MAP, **14 Flex (proto 1), 15 FAN (proto 2), 16 Fuel (proto 3), 17 TACH (proto 4), 18 Clutch (proto 5)**, 19 CLT, 20 IAT, 21 O2, 22 TPS, 23 GND, 24 CAM, 25 CRANK, 37 PWM_IDLE.
+- Les pastilles JP6 à JP10 relient les sorties Flex, ventilateur, pompe, compte-tours et embrayage à ces broches proto 1 à 5 (schéma v0.4).
+- Hypothèse : le fil jaune soudé sur la carte est celui de l'électrovanne de ralenti sur la broche 37, que l'adaptateur ne fait pas passer.

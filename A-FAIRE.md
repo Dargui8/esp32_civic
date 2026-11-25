@@ -66,14 +66,14 @@ Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séa
 | A | Lister les sondes sur la masse de la carte (eau, air, papillon, MAP, capteurs Hall) | Toutes | Finir avant la séance 2 |
 | B | **MAP** : position de **JP11** (3 broches près du MPX4250) ; tension sur A3, contact mis, masses refaites | Le capteur voulu sur A3 | — |
 | C | **MAP Denso** : tension au connecteur du capteur, puis sur A3 | ≈ 2,9 V aux deux | Bon au capteur, faux sur A3 = JP11 ou piste |
-| D | **Ventilateur** : la broche PROTO reliée à JP7 est-elle libre dans le faisceau ? | Libre | Autre solution |
-| E | **Ponter JP7 à l'étain**, relier la broche au fil du thermocontact côté relais | — | — |
+| D | **Ventilateur** : la broche **IDC 15** (FAN, proto 2, reliée à JP7) est-elle libre dans l'adaptateur et le faisceau ? | Libre | Autre solution |
+| E | **Ponter JP7 à l'étain**, relier IDC 15 au **fil GRN** du thermocontact (côté relais, manuel Honda 23-112) | — | — |
 | F | Test : `fanSP` à 20 °C → Burn → contact mis | Le ventilateur tourne | Revoir E |
 | G | Remettre `fanSP` à 90 °C → Burn | — | — |
 | H | **Fil jaune** : ses deux bouts (photo) | Noté | — |
 | I | **Lambda** : le fil va-t-il à l'entrée O2 (Arduino A8) ? | Oui | Le raccorder |
 
-*Compte-tours (JP9) : même méthode, plus tard.*
+*Compte-tours : JP9 → IDC 17 (TACH, proto 4) → fil **BLU** de l'ancien module d'allumage, au combiné borne C9 (manuel 23-114). Plus tard.*
 
 ## Séance 2 — moteur tournant, carto 6, journal lancé (≈ 30 min)
 
