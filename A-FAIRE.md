@@ -1,6 +1,6 @@
 # À faire — D16Y3 / Speeduino
 
-Dernière mise à jour : 25 novembre 2026 (plan d'action en deux séances). Les constats et leurs sources sont dans `cartographies/README.md` (essais, journaux) et `fiches-techniques/README.md` (pièces, recherches).
+Dernière mise à jour : 25 novembre 2026 (résultats de la séance 1). Les constats et leurs sources sont dans `cartographies/README.md` (essais, journaux) et `fiches-techniques/README.md` (pièces, recherches).
 
 ## Méthode
 
@@ -33,6 +33,30 @@ Dernière mise à jour : 25 novembre 2026 (plan d'action en deux séances). Les 
 | 10 | **MAP** : tension sur l'Arduino **A3**, contact mis | ≈ 2,9 V | ≈ 0,75 V = le signal se perd sur la carte |
 | 11 | **Lambda** : repérer les 4 fils (paire de faible résistance = chauffage) ; 12 V sur le chauffage contact mis | Paire trouvée, 12 V | Noter |
 | 12 | **Sondes eau et air à froid** : résistance de chacune + température ambiante au thermomètre | 2 chiffres par sonde | — |
+
+### Résultats de la séance 1 (25/11, propriétaire)
+
+| # | Mesure | Lecture |
+|---|---|---|
+| 1 | Masse du boîtier à fusibles refaite | OK |
+| 2 | Batterie au repos | 12,6 V : bonne |
+| 3 | 5 V de la carte | 5,1 V : bon |
+| 4 | TunerStudio contact mis | Papillon OK (eau et air affichés : à noter) |
+| 5 | Masse carte ↔ − batterie | 0,4 Ω : à recontrôler (cordons du multimètre à soustraire ; la chute de tension moteur tournant, étape 15, tranchera) |
+| 6 | 2ᵉ fil de la sonde d'eau | **Va au boîtier à fusibles**, pas à la masse capteurs de la carte : **cause probable des sauts de température** (hypothèse forte) |
+| 7 | Électrovanne, autre fil | 12,49 V contact mis (0 V contact coupé : à confirmer) |
+| 8 | Ventilateur ponté | Tourne : relais, fusibles et moteur bons ; reste le thermocontact ou la commande Speeduino |
+| 9 | Cavaliers JP7 / JP9 | Photo annoncée, pas reçue |
+| 10 | MAP sur l'Arduino A3 | **0,77 V** (noté « ohm », lu comme volts) = les 26 kPa affichés : le signal du capteur n'arrive pas à A3. Piste : **cavalier JP11** (choix capteur MAP intégré / externe, schéma v0.4) et continuité broche MAP-EXT de l'IDC → A3 |
+| 11 | Lambda | **Un seul fil branché** : ni chauffage, ni masse du signal. Explique l'absence de signal |
+| 12 | Sondes à froid | Eau **3,1 kΩ** (bloc 17,2 °C, radiateur 14,7 °C) ; air **2,9 kΩ** (≈20 °C) |
+
+### Corrections avant la séance 2
+
+- [ ] **Masse de la sonde d'eau** (et de toutes les sondes : air, papillon, MAP, capteurs Hall) sur une **broche GND de la carte**, pas sur le boîtier à fusibles.
+- [ ] **MAP** : position du cavalier JP11 ; tension sur la broche MAP-EXT de l'IDC et sur A3.
+- [ ] **Lambda** : brancher les 4 fils (chauffage : 12 V après contact protégé par fusible + masse ; signal → entrée O2 ; masse du signal → GND capteurs de la carte).
+- [ ] Ventilateur : thermocontact à l'ohmmètre dans l'eau chaude ; ou commande Speeduino par JP7.
 
 ## Séance 2 — moteur tournant, carto 6, journal lancé (≈ 30 min)
 
