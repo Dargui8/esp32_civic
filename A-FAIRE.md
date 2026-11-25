@@ -12,6 +12,11 @@ Précision du propriétaire : **pas de démarreur**. Seul le relais du boîtier 
 - [ ] Contact mis : **5 V** sur la carte ; alimentation (+ et masse) au connecteur de chaque capteur Hall.
 - [ ] Moteur tourné à la main (vis de vilebrequin) : le signal bascule-t-il au connecteur du capteur ? Puis sur l'Arduino **19** (vilebrequin) et **18** (came). Rien au capteur avec + et masse bons = capteur hors service ; bon au capteur et rien à l'Arduino = carte.
 - [ ] Ensuite seulement : lancement court avec le « Tooth logger » de TunerStudio.
+- **Mise à jour du 25/11, 16 h** : tout refonctionne sans intervention (propriétaire). Contrôles de confirmation :
+  - [ ] 5 V de la carte mesuré au multimètre (≈5,0 V) : une dérive fausserait toutes les sondes.
+  - [ ] Contact mis : papillon 0 → 100 % en appuyant, eau et air ≈ température ambiante, batterie ≈ 12 V.
+  - [ ] Ralenti avec journal (carto 6) : régime stable, « Sync Loss # » reste à 0, les 4 cylindres travaillent, électrovanne qui réagit ; comparer avec les journaux du 15/11.
+  - [ ] **Masse du boîtier à fusibles** : cosse sertie, vissée sur métal nu, sans jeu. Hypothèse : si elle était déjà lâche le 15/11, elle pourrait expliquer les baisses de tension et les sauts de température d'eau.
 
 ## 0. Mesures à prendre au prochain passage, avant la carto « tout en un »
 
