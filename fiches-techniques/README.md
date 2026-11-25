@@ -243,4 +243,5 @@ Hôtes non joignables depuis la session cloud : wiki.speeduino.com, speeduino.co
 
 - J1 reprend la numérotation de l'IDC : 11 MAP, **14 Flex (proto 1), 15 FAN (proto 2), 16 Fuel (proto 3), 17 TACH (proto 4), 18 Clutch (proto 5)**, 19 CLT, 20 IAT, 21 O2, 22 TPS, 23 GND, 24 CAM, 25 CRANK, 37 PWM_IDLE.
 - Les pastilles JP6 à JP10 relient les sorties Flex, ventilateur, pompe, compte-tours et embrayage à ces broches proto 1 à 5 (schéma v0.4).
-- Hypothèse : le fil jaune soudé sur la carte est celui de l'électrovanne de ralenti sur la broche 37, que l'adaptateur ne fait pas passer.
+- Circuit imprimé de l'adaptateur (capture du 25/11) : sur J1, les broches **14 à 18 (proto 1 à 5) et 37 (PWM_IDLE) ne sont pas routées** ; sur J2, les voies 9, 12 et 13 sont marquées « x » (libres).
+- Hypothèse renforcée : le fil jaune soudé sur la carte est celui de l'électrovanne de ralenti sur la broche 37, que l'adaptateur ne fait pas passer.

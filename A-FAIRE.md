@@ -66,7 +66,7 @@ Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séa
 | A | Lister les sondes sur la masse de la carte (eau, air, papillon, MAP, capteurs Hall) | Toutes | Finir avant la séance 2 |
 | B | **MAP** : position de **JP11** (3 broches près du MPX4250) ; tension sur A3, contact mis, masses refaites | Le capteur voulu sur A3 | — |
 | C | **MAP Denso** : tension au connecteur du capteur, puis sur A3 | ≈ 2,9 V aux deux | Bon au capteur, faux sur A3 = JP11 ou piste |
-| D | **Ventilateur** : la broche **IDC 15** (FAN, proto 2, reliée à JP7) est-elle libre dans l'adaptateur et le faisceau ? | Libre | Autre solution |
+| D | **Ventilateur** : IDC 15 (FAN, proto 2, reliée à JP7) est **libre et non routée** sur l'adaptateur (circuit imprimé du propriétaire, 25/11). Pour sortir : fil volant comme le fil jaune, ou fil vers une voie libre de J2 (9, 12 ou 13 marquées « x », à confirmer) | Voie choisie | — |
 | E | **Ponter JP7 à l'étain**, relier IDC 15 au **fil GRN** du thermocontact (côté relais, manuel Honda 23-112) | — | — |
 | F | Test : `fanSP` à 20 °C → Burn → contact mis | Le ventilateur tourne | Revoir E |
 | G | Remettre `fanSP` à 90 °C → Burn | — | — |
