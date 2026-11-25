@@ -245,3 +245,8 @@ Hôtes non joignables depuis la session cloud : wiki.speeduino.com, speeduino.co
 - Les pastilles JP6 à JP10 relient les sorties Flex, ventilateur, pompe, compte-tours et embrayage à ces broches proto 1 à 5 (schéma v0.4).
 - Circuit imprimé de l'adaptateur (capture du 25/11) : sur J1, les broches **14 à 18 (proto 1 à 5) et 37 (PWM_IDLE) ne sont pas routées** ; sur J2, les voies 9, 12 et 13 sont marquées « x » (libres).
 - Hypothèse renforcée : le fil jaune soudé sur la carte est celui de l'électrovanne de ralenti sur la broche 37, que l'adaptateur ne fait pas passer.
+
+### Autres pièces vues (photos du 25/11)
+
+- **Antidémarrage Honda** : boîtier Honda Lock **HLI 502**, transpondeur 125 kHz. Sur l'origine, il dialogue avec le calculateur Honda ; le Speeduino ne l'utilise pas (hypothèse : sans effet sur le démarrage, sauf s'il coupe un circuit dans le faisceau EJ9, à vérifier au raccordement). La voiture n'a donc plus d'antidémarrage actif.
+- **Combiné d'instruments** : le manuel distingue les versions avec et sans compte-tours (pages des ampoules) ; vérifier que celui de la voiture en a un avant de câbler JP9.
