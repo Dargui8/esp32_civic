@@ -1,6 +1,6 @@
 # À faire — D16Y3 / Speeduino
 
-Dernière mise à jour : 25 novembre 2026 (résultats de la séance 1). Les constats et leurs sources sont dans `cartographies/README.md` (essais, journaux) et `fiches-techniques/README.md` (pièces, recherches).
+Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séance 2). Les constats et leurs sources sont dans `cartographies/README.md` (essais, journaux) et `fiches-techniques/README.md` (pièces, recherches).
 
 ## Méthode
 
@@ -51,38 +51,56 @@ Dernière mise à jour : 25 novembre 2026 (résultats de la séance 1). Les cons
 | 11 | Lambda | **Un seul fil branché** : ni chauffage, ni masse du signal. Explique l'absence de signal |
 | 12 | Sondes à froid | Eau **3,1 kΩ** (bloc 17,2 °C, radiateur 14,7 °C) ; air **2,9 kΩ** (≈20 °C) |
 
-### Corrections avant la séance 2
+### Ce que montrent les photos (25/11)
 
-- [ ] **Masse de la sonde d'eau** (et de toutes les sondes : air, papillon, MAP, capteurs Hall) sur une **broche GND de la carte**, pas sur le boîtier à fusibles.
-- [ ] **MAP** : position du cavalier JP11 ; tension sur la broche MAP-EXT de l'IDC et sur A3.
-- [ ] **Lambda** : brancher les 4 fils (chauffage : 12 V après contact protégé par fusible + masse ; signal → entrée O2 ; masse du signal → GND capteurs de la carte).
-- [ ] Ventilateur : thermocontact à l'ohmmètre dans l'eau chaude ; ou commande Speeduino par JP7.
+- **Pastilles JP6 à JP10** (dessous de la carte) : **ouvertes**. Les sorties ventilateur (JP7) et compte-tours (JP9) n'arrivent pas au connecteur : c'est pourquoi le ventilateur n'a jamais démarré sur commande du Speeduino.
+- **Capteur MAP MPX4250AP soudé sur la carte**, en plus du Denso de la voiture. A3 lit 0,77 V moteur arrêté : ni ≈ 2,9 V (Denso), ni ≈ 1,8 V (MPX4250A, formule NXP citée dans `speeduino.ini`). Le **cavalier JP11** choisit le capteur qui va sur A3.
+- **Lambda à 1 fil**, non chauffée : signal seulement très chaude, masse par l'échappement.
+- Un **fil jaune** soudé sur la carte : rôle à identifier.
+- Masses des sondes refaites (propriétaire, 25/11).
+
+## Séance 1 bis — moteur arrêté (≈ 45 min)
+
+| # | Action | Attendu | Sinon |
+|---|---|---|---|
+| A | Lister les sondes sur la masse de la carte (eau, air, papillon, MAP, capteurs Hall) | Toutes | Finir avant la séance 2 |
+| B | **MAP** : position de **JP11** (3 broches près du MPX4250) ; tension sur A3, contact mis, masses refaites | Le capteur voulu sur A3 | — |
+| C | **MAP Denso** : tension au connecteur du capteur, puis sur A3 | ≈ 2,9 V aux deux | Bon au capteur, faux sur A3 = JP11 ou piste |
+| D | **Ventilateur** : la broche PROTO reliée à JP7 est-elle libre dans le faisceau ? | Libre | Autre solution |
+| E | **Ponter JP7 à l'étain**, relier la broche au fil du thermocontact côté relais | — | — |
+| F | Test : `fanSP` à 20 °C → Burn → contact mis | Le ventilateur tourne | Revoir E |
+| G | Remettre `fanSP` à 90 °C → Burn | — | — |
+| H | **Fil jaune** : ses deux bouts (photo) | Noté | — |
+| I | **Lambda** : le fil va-t-il à l'entrée O2 (Arduino A8) ? | Oui | Le raccorder |
+
+*Compte-tours (JP9) : même méthode, plus tard.*
 
 ## Séance 2 — moteur tournant, carto 6, journal lancé (≈ 30 min)
 
 | # | Action | Attendu |
 |---|---|---|
-| 13 | Démarrage : tension **au démarreur** (au plus bas) | Le chiffre (7,9 V le 15/11) |
-| 14 | Ralenti jusqu'au ventilateur ou ≈ 85 °C au thermomètre infrarouge : régime à 40, 60 et 80 °C. **Sans ventilateur : surveiller l'eau, couper si elle monte franchement** | ≈ 800-950 tr/min chaud |
-| 15 | À chaque saut de température dans TunerStudio : **tension aux bornes de la batterie** et **masse carte ↔ − batterie** (en V) | Batterie stable, masse < 0,1 V |
-| 16 | **Sonde d'eau à chaud** : résistance + température au thermomètre infrarouge (boîtier de thermostat) | 3ᵉ point de calibration |
-| 17 | **Lambda** : signal côté sonde, puis sur l'Arduino **A8** | Bouge 0,1-0,9 V, ou reste haut si riche |
-| 18 | **Calage** : Fixed Angle 10° → stroboscope sur la rallonge du cylindre 1 → angle lu → Fixed Angle Off | L'écart en degrés |
-| 19 | Tension moteur à ≈ 2 000 tr/min | 13,5-14,5 V |
-| 20 | Couper, **envoyer le journal** et les mesures | — |
+| 13 | Tension **au démarreur** (au plus bas) | Le chiffre |
+| 14 | Ralenti jusqu'au ventilateur : régime à 40, 60, 80 °C ; eau surveillée au thermomètre infrarouge | ≈ 800-950 tr/min chaud ; ventilateur vers 90 °C lus |
+| 15 | **Sauts de température disparus ?** Sinon : tension aux bornes de la batterie et masse carte ↔ − batterie | Plus de sauts |
+| 16 | **Sonde d'eau à chaud** : résistance + température au thermomètre infrarouge | 2ᵉ point |
+| 17 | **Sonde d'air** démontée, sèche-cheveux + thermomètre : résistance | 2ᵉ point |
+| 18 | **Lambda** : 2-3 min vers 2 500 tr/min, signal fil ↔ bloc moteur, puis sur A8 | Bascule 0,1 ↔ 0,9 V |
+| 19 | **Calage** : Fixed Angle 10° → stroboscope (rallonge, cylindre 1) → angle lu → Fixed Angle Off | Écart en degrés |
+| 20 | Tension vers 2 000 tr/min ; couper ; **envoyer journal et mesures** | 13,5-14,5 V |
 
-## Ensuite — sans la voiture
+## Ensuite — sans la voiture : carto 7
 
-1. Décoder le journal ; trancher la cause des sauts de température (masse ou sonde).
-2. **Carto 7** en une fois : calibration eau et air (3 points), Trigger Angle corrigé, courbe d'électrovanne finale, lambda activée si son signal est bon, MAP recalibré si la cause est trouvée.
-3. Mettre à jour `cartographies/README.md` et ce fichier.
+- Eau et air calibrées (points mesurés, « Calibrate Thermistor Tables »).
+- MAP : préréglage du capteur retenu (« Denso 079800 » 0-173 kPa ou « MPX4250A » 10-260 kPa).
+- Lambda : `egoType` Narrow Band si le signal bascule.
+- Trigger Angle corrigé d'après le stroboscope ; courbe d'électrovanne ajustée à chaud.
 
 ## Plus tard
 
 - Pression d'essence au manomètre (régulateur AEM, usine 40 psi = 276 kPa, jamais mesurée).
 - Lambda large bande (Bosch LSU 4.9 + contrôleur) ; sonde Denso 065500-2730 gardée en secours.
 - Réglage de la VE à partir des journaux (VE Analyze Live absent de MS Lite).
-- Câblage Speeduino → relais de ventilateur (JP7) et → compte-tours du tableau de bord (JP9).
+- Compte-tours du tableau de bord (JP9).
 - Fréquence de l'électrovanne (160 Hz dans le tune, valeur Honda non trouvée).
 - Temps d'ouverture réel des injecteurs (1,0 ms dans le tune, valeur Honda non trouvée).
 - Étincelle à la mise sous tension : essai USB branché d'abord, puis contact.

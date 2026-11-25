@@ -21,10 +21,11 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Sonde d’eau ECU | **37870-PJ7-003**, TW5 Matsushita — référence du montage d’origine D16Y3 |
 | Sonde de température d’air | **37880-P05-A00** — référence du montage d’origine D16Y3 |
 | Corps de papillon / TPS | **16400-P1G-E01** (GRS3A), retenu sur correspondance visuelle signalée par le propriétaire le 3 novembre 2026 ; TPS non référencé séparément |
-| Sonde lambda | Sonde étroite actuellement indiquée ; remplacement futur traité à part dans la section « Lambda — évolution ultérieure » |
+| Sonde lambda | **Sonde étroite à 1 fil, non chauffée** (photo du 25/11) ; remplacement futur traité à part dans la section « Lambda — évolution ultérieure » |
 | Ralenti | Pas de vanne de ralenti pilotée par la carte |
 | Pompe à essence | Neuve, achetée sur Autodoc d'après le numéro de châssis, caractéristiques d'origine |
 | Faisceau moteur | Neuf, fait par le propriétaire ; bobines reliées directement au Speeduino, plus de distributeur |
+| Carte Speeduino (photos du 25/11) | Capteur **MPX4250AP soudé sur la carte** (en plus du MAP Denso) ; cavalier JP11 = choix du capteur sur A3. Pastilles à souder **JP6 à JP10 ouvertes** (Flex, ventilateur, pompe, compte-tours, launch) : ces sorties n'arrivent pas à l'IDC. Un fil jaune soudé, rôle à identifier |
 
 ## Documents
 
