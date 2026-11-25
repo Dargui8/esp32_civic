@@ -2,6 +2,17 @@
 
 Dernière mise à jour : 15 novembre 2026 (essai de la carto 4). Le détail et les sources sont dans `cartographies/README.md` et `fiches-techniques/README.md` (§ « Recherche du 5 novembre 2026 »).
 
+## ⚠️ Incident du 25/11 : démarrage avec une masse débranchée
+
+Le propriétaire a lancé le moteur avec une masse oubliée : **la carte a fait un bruit, et TunerStudio n'affiche plus de régime**. Ne plus lancer le démarreur avant les contrôles ci-dessous (hypothèse : le courant du démarreur est passé par des fils fins de masse).
+
+- [ ] Remettre la masse oubliée et la noter ici (laquelle ?).
+- [ ] Carte hors tension : odeur, trace noire, composant gonflé ou fendu (régulateur LM2940-5.0, zone des entrées vilebrequin/came, pistes et broches de masse de l'IDC, Arduino).
+- [ ] **Fils de masse des capteurs de came (kit Honed) et du faisceau moteur** : gaine fondue ? continuité vers la masse de la carte (≈0 Ω) ?
+- [ ] USB seul : TunerStudio se connecte-t-il encore ?
+- [ ] Contact mis : **5 V** (VDDA) sur la carte ; alimentation des capteurs Hall au connecteur de chaque capteur.
+- [ ] Moteur tourné à la main (vis de vilebrequin) : le signal du capteur bascule-t-il (0 V ↔ alimentation) au connecteur du capteur, puis sur l'Arduino **19** (entrée vilebrequin) et **18** (entrée came) ? Outil « Tooth logger » de TunerStudio pendant un lancement court, seulement une fois tout le reste vérifié.
+
 ## 0. Mesures à prendre au prochain passage, avant la carto « tout en un »
 
 Ce qu'aucune source publique n'a donné ; une mesure au multimètre le remplace.
