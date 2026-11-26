@@ -103,6 +103,8 @@ Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séa
 - [ ] Tension au connecteur du capteur, carte branchée (≈ 2,9 V attendus) ; **résistance A3 ↔ masse, tout hors tension** (attendu : élevée, des dizaines de kΩ ou plus) ; photo de JP11 ; puis même mesure Arduino Mega retiré du shield pour savoir si c'est le shield ou l'Arduino.
 - [ ] **MAP** : tension sur l'IDC 11 côté carte ; résistance IDC 11 ↔ A3 (≈ 470 Ω attendus) ; **photo de JP11**.
 - [ ] **Plan B MAP** : utiliser le **MPX4250AP de la carte** (JP11 sur le capteur intégré, durite de dépression du collecteur vers l'embout de la carte, préréglage « MPX4250A » 10-260 kPa ; ≈ 1,8 V sur A3 à l'arrêt).
+- [x] Calibration MPX4250A faite ; `fanSP` = 0 : **indicateur Fan allumé dans TunerStudio**, ventilateur arrêté (propriétaire, 26/11) → la commande logicielle part, la panne est entre l'Arduino et le fil GRN.
+- [ ] Fan ON : tension **Arduino 47** (≈ 5 V attendus = entrée du ULN2003) ; tension **IDC 15 ↔ masse**, fil GRN branché (≈ 0-1 V = sortie active ; ≈ 12 V = ULN2003 ou pont JP7 en cause) ; continuité **IDC 15 → fil GRN** au thermocontact.
 - [ ] **Ventilateur** : `fanSP` = 0, Burn, contact mis ; dans TunerStudio, l'indicateur « Fan » est-il allumé ? Tension IDC 15 ↔ masse : ≈ 12 V = sortie inactive ; ≈ 0-1 V = active. Continuité des deux pastilles de JP7.
 - [ ] **Lambda** : résistance IDC 21 ↔ A8 en ohms (≈ 470 Ω).
 
