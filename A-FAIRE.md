@@ -1,14 +1,75 @@
 # À faire — D16Y3 / Speeduino
 
-Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séance 2). Les constats et leurs sources sont dans `cartographies/README.md` (essais, journaux) et `fiches-techniques/README.md` (pièces, recherches).
+Dernière mise à jour : 26 novembre 2026 (plan n° 3 : carte à changer ou pas). Les constats et leurs sources sont dans `cartographies/README.md` (essais, journaux) et `fiches-techniques/README.md` (pièces, recherches).
 
-## ⚠️ 26/11, 16 h 54 : injecteurs « ouverts en permanence »
+## Plan n° 3 (26/11) — Carte Speeduino : la changer ou pas, et repartir propre
 
-- [ ] **Ne pas relancer** ; pompe non alimentée. Contact mis, moteur arrêté, pompe coupée : tension au **fil de commande (−) de chaque injecteur** ≈ 12 V attendus (injecteur fermé). ≈ 0 V = transistor de la carte en court-circuit = injecteur ouvert en permanence.
-- [ ] Bougies : mouillées d'essence ? Si oui, les sécher et faire tourner au démarreur **bougies démontées**, injecteurs débranchés, pour vider les cylindres. Vérifier le niveau d'huile (odeur d'essence = huile à vidanger).
-- [ ] **Masse de la carte** : fil court et épais de la borne GND de la carte au bloc moteur ou au − batterie ; les masses des bobines et de l'électrovanne directement au bloc, pas par la carte. Contrôle : tension lue stable dans TunerStudio moteur tournant.
-- [ ] Après le rechargement du tune : remettre le **MAP en « MPX4250A »** (Burn) et `fanSP` à 90 °C ; vérifier que la durite va bien au collecteur (le MAP doit baisser au ralenti).
-- [ ] Sonde d'air figée à 15 °C : calibration écrite ? fil et masse jusqu'à l'IDC 20 ?
+### Contexte
+
+**Ce qui est déjà prouvé abîmé ou anormal depuis l'incident de masse du 25/11**
+- La sortie **47 de l'ancien Arduino** ne commandait plus : l'Arduino a été remplacé, et la commande arrive maintenant.
+- La **sortie 5 de la puce ULN2003 (U6)** ne met plus le fil à la masse, alors que la commande lui arrive (5 V à l'entrée, 12 V qui restent à la sortie).
+- **Journal du 26/11, 16 h 54** :
+  - la tension batterie lue varie de 1,8 à 19,9 V moteur tournant ;
+  - le ralenti est très bas, avec 6 calages ;
+  - le calculateur commande pourtant une injection normale (8 à 15 ms).
+- Le propriétaire décrit des **injecteurs qui semblent ouverts en permanence**.
+
+**Ce qu'on cherche** : en environ 20 minutes de mesures, savoir s'il est **quasi sûr que la carte est en cause**. Si oui, le propriétaire la change. Dans tous les cas, on refait ensuite la **masse** pour que ça ne recommence pas.
+
+### Étape 1 — Diagnostic, moteur arrêté, pompe coupée (≈ 20 min)
+
+| # | Mesure | Bon | Carte en cause |
+|---|---|---|---|
+| 1 | Contact mis : tension sur le **fil de commande (−) de chaque injecteur**, au connecteur de l'injecteur | ≈ 12 V sur les 4 | **≈ 0 V sur au moins un** = transistor de la carte en court-circuit |
+| 2 | Voyants **INJECTORS** (D3, D7, D8, D4) de la carte, contact mis, moteur arrêté | Éteints | Allumés fixe |
+| 3 | Débrancher un injecteur dont le fil est à 0 V : la tension revient-elle sur la broche de la carte, broche à vide ? | — | La broche reste à la masse = sortie de la carte en court-circuit |
+| 4 | Contact coupé : résistance **masse de la carte ↔ − batterie**, cordons du multimètre retirés de la mesure | < 0,1 Ω | — (c'est le câblage, pas la carte) |
+| 5 | Contact mis : la tension batterie dans TunerStudio est-elle stable, et égale à celle du multimètre aux bornes de la batterie ? | Stable, ± 0,3 V | Elle saute alors que la batterie est stable et la masse bonne |
+
+#### Décision
+- **Le point 1 ou 3 donne « carte en cause »** → **changer la carte**. Avec l'ULN2003 déjà morte, il y aurait plusieurs composants de puissance touchés : une carte neuve est plus sûre qu'une réparation pièce par pièce.
+- **Les 4 fils d'injecteurs à 12 V** :
+  1. Refaire la masse (étape 2).
+  2. Faire un court ralenti avec un journal.
+  3. Si la tension lue saute toujours, ou si un injecteur coule encore, **changer la carte**.
+  4. Sinon, la garder, et seulement remplacer l'ULN2003 ou passer par la voie 7 pour le ventilateur.
+
+### Étape 2 — Masse, dans tous les cas
+
+- Un fil **court et épais** de la borne GND de la carte jusqu'au bloc moteur, plus un fil du bloc au − batterie.
+- Les **masses des bobines, de l'électrovanne et du boîtier à fusibles** vont **directement au bloc**, pas à travers la carte.
+- La masse du boîtier à fusibles est vérifiée **avant chaque mise sous tension**.
+- **Contrôle** : la tension lue dans TunerStudio reste stable, vers 13,5 à 14,5 V, moteur tournant.
+
+### Étape 3 — Avant de redémarrer
+
+- **Bougies** : si elles sont mouillées, les sécher. Faire tourner au démarreur bougies démontées, injecteurs débranchés, pour vider les cylindres.
+- **Huile** : si elle sent l'essence, la vidanger.
+
+### Étape 4 — Si la carte est changée : la remonter
+
+| À reprendre sur la nouvelle carte | Comment |
+|---|---|
+| Arduino | Le nouveau, firmware 202402 déjà dessus |
+| Capteur MAP intégré | Pont **JP11 2-1**, durite du collecteur, préréglage « MPX4250A » |
+| Ventilateur | Pont **JP7**, fil vert sur la broche 15 → fil GRN |
+| Électrovanne de ralenti | Fil jaune sur la broche **37**, que l'adaptateur ne fait pas passer |
+| Cavaliers de conditionnement | **JP4, JP5** (Primary / Secondary, réglage des pull-ups) dans la même position que sur l'ancienne carte : photo de l'ancienne avant le démontage |
+| Masse | Celle de l'étape 2 |
+
+### Étape 5 — Remise en route, avec la carto 6 et un journal
+
+1. Charger le tune, puis refaire ce qui n'est pas dans le tune :
+   - sondes eau et air (GM provisoire) et lambda (Narrowband), par **Write to Controller** ;
+   - MAP sur **« MPX4250A »** et `fanSP` à **90 °C**, puis Burn.
+2. Contact mis, sans démarrer :
+   - fils d'injecteurs à 12 V ;
+   - environ 100 kPa ;
+   - eau et air à la température ambiante ;
+   - tension stable.
+3. Démarrer : la tension doit rester stable, le MAP baisser au ralenti, sans aucun calage.
+4. M'envoyer le journal. Ensuite, on reprend la séance 2 (calibrations à chaud, calage, lambda), puis la carto 7.
 
 ## Méthode
 
