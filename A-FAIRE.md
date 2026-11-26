@@ -75,6 +75,26 @@ Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séa
 
 *Compte-tours : JP9 → IDC 17 (TACH, proto 4) → fil **BLU** de l'ancien module d'allumage, au combiné borne C9 (manuel 23-114). Plus tard.*
 
+### Résultats de la séance 1 bis (26/11, propriétaire)
+
+| # | Lecture | Interprétation |
+|---|---|---|
+| A | Toutes les sondes sur la masse de la carte | Fait |
+| B | A3 = 0,72 V ; JP11 : position non relevée | Toujours ≈ 26 kPa |
+| C | Au connecteur du capteur MAP : 5,01 V, signal **1,75 V**, masse OK | Le signal se perd entre le capteur (1,75 V) et A3 (0,72 V). Et 1,75 V est bas pour un capteur Honda à l'arrêt (≈ 2,9 V attendus, données revendeur) : la carte tire peut-être le signal vers le bas |
+| D-E | IDC 15 libre ; JP7 ponté ; relié au fil GRN | Fait |
+| F | `fanSP` = 0 °C, Burn : **le ventilateur ne s'enclenche pas** ; mis à la masse à la main, il tourne | Le relais et le fil GRN sont bons ; la commande de la carte n'arrive pas |
+| H | Fil jaune = électrovanne de ralenti (IDC 37) | Confirmé |
+| I | Lambda sur IDC 21 ; « pas de continuité » entre 21 et A8 | Normal en mode bip : une résistance de **470 Ω** (R31) est en série sur la carte. À mesurer en ohms |
+
+### Contrôles suivants (moteur arrêté)
+
+- [ ] **MAP, capteur débranché de la carte** (fil retiré de l'IDC 11 ou de la voie J2 21) : signal du capteur seul. ≈ 2,9 V = la carte tire le signal vers le bas ; ≈ 1,75 V = capteur douteux.
+- [ ] **MAP** : tension sur l'IDC 11 côté carte ; résistance IDC 11 ↔ A3 (≈ 470 Ω attendus) ; **photo de JP11**.
+- [ ] **Plan B MAP** : utiliser le **MPX4250AP de la carte** (JP11 sur le capteur intégré, durite de dépression du collecteur vers l'embout de la carte, préréglage « MPX4250A » 10-260 kPa ; ≈ 1,8 V sur A3 à l'arrêt).
+- [ ] **Ventilateur** : `fanSP` = 0, Burn, contact mis ; dans TunerStudio, l'indicateur « Fan » est-il allumé ? Tension IDC 15 ↔ masse : ≈ 12 V = sortie inactive ; ≈ 0-1 V = active. Continuité des deux pastilles de JP7.
+- [ ] **Lambda** : résistance IDC 21 ↔ A8 en ohms (≈ 470 Ω).
+
 ## Séance 2 — moteur tournant, carto 6, journal lancé (≈ 30 min)
 
 | # | Action | Attendu |
