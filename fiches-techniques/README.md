@@ -17,7 +17,7 @@ Ce qui manque est marqué **à ajouter**. Pour déposer un fichier : sur GitHub,
 | Bobines | NGK U5014, marquage `105N R06 02 S 003 00 0025354724`, étincelle unique |
 | Injecteurs | Honda d’origine D16Y3 : ensemble **06164-P06-A02** (identification catalogue). Marquage lu : « Keihin », fabriqué au Japon, plus 4 chiffres différents sur chaque injecteur (série ou lot, pas une référence). **Résistance mesurée : 12 Ω** (propriétaire, 15/11/2026) = injecteurs haute impédance, pilotables directement par la carte v0.4. 240 cc/min : donnée du projet, pression de référence non documentée |
 | Régulateur de pression d'essence | AEM 25-304BK, réglable. Vis de réglage non touchée depuis la réception (indiqué par le propriétaire le 3 novembre 2026) : réglage d'usine 40 psi (notice p. 4), **pas encore mesuré** sur la voiture |
-| Capteur MAP | Denso 079800-3000, 5 V, marquage PS-30 (celui de la voiture, relié à l'admission) |
+| Capteur MAP | Denso 079800-3000, 5 V, marquage PS-30 : **signal collé à 5 V sur alimentation externe, remplacé le 26/11** (propriétaire) ; référence du nouveau capteur à noter |
 | Sonde d’eau ECU | **37870-PJ7-003**, TW5 Matsushita — référence du montage d’origine D16Y3 |
 | Sonde de température d’air | **37880-P05-A00** — référence du montage d’origine D16Y3 |
 | Corps de papillon / TPS | **16400-P1G-E01** (GRS3A), retenu sur correspondance visuelle signalée par le propriétaire le 3 novembre 2026 ; TPS non référencé séparément |
