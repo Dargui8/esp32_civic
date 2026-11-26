@@ -2,6 +2,14 @@
 
 Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séance 2). Les constats et leurs sources sont dans `cartographies/README.md` (essais, journaux) et `fiches-techniques/README.md` (pièces, recherches).
 
+## ⚠️ 26/11, 16 h 54 : injecteurs « ouverts en permanence »
+
+- [ ] **Ne pas relancer** ; pompe non alimentée. Contact mis, moteur arrêté, pompe coupée : tension au **fil de commande (−) de chaque injecteur** ≈ 12 V attendus (injecteur fermé). ≈ 0 V = transistor de la carte en court-circuit = injecteur ouvert en permanence.
+- [ ] Bougies : mouillées d'essence ? Si oui, les sécher et faire tourner au démarreur **bougies démontées**, injecteurs débranchés, pour vider les cylindres. Vérifier le niveau d'huile (odeur d'essence = huile à vidanger).
+- [ ] **Masse de la carte** : fil court et épais de la borne GND de la carte au bloc moteur ou au − batterie ; les masses des bobines et de l'électrovanne directement au bloc, pas par la carte. Contrôle : tension lue stable dans TunerStudio moteur tournant.
+- [ ] Après le rechargement du tune : remettre le **MAP en « MPX4250A »** (Burn) et `fanSP` à 90 °C ; vérifier que la durite va bien au collecteur (le MAP doit baisser au ralenti).
+- [ ] Sonde d'air figée à 15 °C : calibration écrite ? fil et masse jusqu'à l'IDC 20 ?
+
 ## Méthode
 
 - **Un seul changement par essai**, et **toujours un journal** (`.mlg`) dès que le moteur tourne.
