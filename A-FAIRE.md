@@ -89,7 +89,7 @@ Dernière mise à jour : 25 novembre 2026 (plan n° 2 : séance 1 bis, puis séa
 
 ### Contrôles suivants (moteur arrêté)
 
-- [ ] **MAP, capteur débranché de la carte** (fil retiré de l'IDC 11 ou de la voie J2 21) : signal du capteur seul. ≈ 2,9 V = la carte tire le signal vers le bas ; ≈ 1,75 V = capteur douteux.
+- [x] **MAP, capteur seul sur une alimentation 5 V externe** (propriétaire, 26/11) : **signal = 5 V**, collé à l'alimentation. Capteur probablement hors service (hypothèse), ou broches signal/5 V confondues. Vérifier : dépression sur l'embout (seringue, bouche) → le signal bouge-t-il ? Sinon : passer au **MPX4250AP de la carte** (plan B) ou remplacer le capteur.
 - [ ] **MAP** : tension sur l'IDC 11 côté carte ; résistance IDC 11 ↔ A3 (≈ 470 Ω attendus) ; **photo de JP11**.
 - [ ] **Plan B MAP** : utiliser le **MPX4250AP de la carte** (JP11 sur le capteur intégré, durite de dépression du collecteur vers l'embout de la carte, préréglage « MPX4250A » 10-260 kPa ; ≈ 1,8 V sur A3 à l'arrêt).
 - [ ] **Ventilateur** : `fanSP` = 0, Burn, contact mis ; dans TunerStudio, l'indicateur « Fan » est-il allumé ? Tension IDC 15 ↔ masse : ≈ 12 V = sortie inactive ; ≈ 0-1 V = active. Continuité des deux pastilles de JP7.
